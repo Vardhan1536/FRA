@@ -1,0 +1,162 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { 
+  AlertTriangle, 
+  Clock, 
+  MapPin, 
+  CheckCircle,
+  MessageSquare,
+  Eye
+} from 'lucide-react';
+import { Alert } from '../../types';
+
+interface AlertCardProps {
+  alert: Alert;
+  onAcknowledge: (alertId: string, comments?: string) => void;
+  onView: (alert: Alert) => void;
+}
+
+const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) => {
+  const { t } = useTranslation();
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300 border-red-200 dark:border-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
+      default:
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+    }
+  };
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      case 'medium':
+        return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+      default:
+        return <AlertTriangle className="w-4 h-4 text-blue-600" />;
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'urgent_review':
+        return <Clock className="w-5 h-5 text-red-600" />;
+      case 'dss_flag':
+        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
+      case 'anomaly':
+        return <AlertTriangle className="w-5 h-5 text-purple-600" />;
+      default:
+        return <AlertTriangle className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const formatTimeAgo = (timestamp: Date) => {
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 p-6 hover:shadow-xl transition-all duration-200 ${
+        alert.resolved ? 'opacity-75' : ''
+      }`}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          {getTypeIcon(alert.type)}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {alert.type.replace('_', ' ').toUpperCase()}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {formatTimeAgo(alert.timestamp)}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center border ${getSeverityColor(alert.severity)}`}>
+            {getSeverityIcon(alert.severity)}
+            <span className="ml-1">{alert.severity.toUpperCase()}</span>
+          </span>
+          
+          {alert.resolved && (
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 flex items-center">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Resolved
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <MapPin className="w-4 h-4" />
+          <span>{alert.location}</span>
+        </div>
+        <p className="text-gray-700 dark:text-gray-300">{alert.description}</p>
+      </div>
+
+      {alert.acknowledgedBy && (
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <p className="text-sm text-green-700 dark:text-green-300">
+            <strong>Acknowledged by:</strong> {alert.acknowledgedBy}
+            {alert.acknowledgedAt && (
+              <span className="ml-2">on {alert.acknowledgedAt.toLocaleDateString()}</span>
+            )}
+          </p>
+          {alert.comments && (
+            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+              <strong>Comments:</strong> {alert.comments}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          {alert.coordinates && (
+            <span>Coordinates: {alert.coordinates[0]}, {alert.coordinates[1]}</span>
+          )}
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onView(alert)}
+            className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            <Eye className="w-4 h-4" />
+            <span>View</span>
+          </motion.button>
+          
+          {!alert.resolved && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onAcknowledge(alert.id)}
+              className="flex items-center space-x-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>{t('acknowledge_alert')}</span>
+            </motion.button>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default AlertCard;

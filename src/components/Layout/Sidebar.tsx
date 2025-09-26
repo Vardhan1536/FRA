@@ -30,13 +30,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     navigate('/');
   };
 
-  const navItems = [
-    { path: '/grama-sabha/dashboard', icon: Home, label: t('dashboard') },
-    { path: '/grama-sabha/map', icon: Map, label: t('map') },
-    { path: '/grama-sabha/claims', icon: FileText, label: t('claims') },
-    { path: '/grama-sabha/alerts', icon: AlertTriangle, label: t('alerts') },
-    { path: '/grama-sabha/settings', icon: Settings, label: t('settings') }
-  ];
+  const getNavItems = () => {
+    if (currentUser?.role === 'SDLC') {
+      return [
+        { path: '/sdlc/dashboard', icon: Home, label: t('sdlc_dashboard') },
+        { path: '/sdlc/alerts', icon: AlertTriangle, label: t('alerts') },
+        { path: '/sdlc/settings', icon: Settings, label: t('settings') }
+      ];
+    } else if (currentUser?.role === 'DLC') {
+      return [
+        { path: '/dlc/dashboard', icon: Home, label: 'DLC Dashboard' },
+        { path: '/dlc/alerts', icon: AlertTriangle, label: t('alerts') },
+        { path: '/dlc/settings', icon: Settings, label: t('settings') }
+      ];
+    } else {
+      // Default Grama Sabha navigation
+      return [
+        { path: '/grama-sabha/dashboard', icon: Home, label: t('dashboard') },
+        { path: '/grama-sabha/map', icon: Map, label: t('map') },
+        { path: '/grama-sabha/claims', icon: FileText, label: t('claims') },
+        { path: '/grama-sabha/alerts', icon: AlertTriangle, label: t('alerts') },
+        { path: '/grama-sabha/settings', icon: Settings, label: t('settings') }
+      ];
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <>
@@ -61,7 +80,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               </div>
               <div>
                 <h1 className="text-lg font-bold">FRA Atlas</h1>
-                <p className="text-sm text-emerald-300">{t('gramasabha_role')}</p>
+                <p className="text-sm text-emerald-300">
+                  {currentUser?.role === 'SDLC' ? t('sdlc_role') : 
+                   currentUser?.role === 'DLC' ? 'DLC Portal' : 
+                   t('gramasabha_role')}
+                </p>
               </div>
             </div>
             <button
@@ -83,7 +106,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             </div>
             <div>
               <p className="text-sm font-medium">{currentUser?.displayName}</p>
-              <p className="text-xs text-emerald-300">{currentUser?.village}</p>
+              <p className="text-xs text-emerald-300">
+                {currentUser?.district ? `${currentUser.district}, ${currentUser.village}` : currentUser?.village}
+              </p>
             </div>
           </div>
         </div>

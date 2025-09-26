@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Map container fixes to prevent overflow */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+.leaflet-map-pane {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+.leaflet-tile-pane {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+/* Ensure map containers don't overflow */
+.map-container {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Fix for map popups */
+.leaflet-popup {
+  z-index: 1000 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  z-index: 1000 !important;
+}

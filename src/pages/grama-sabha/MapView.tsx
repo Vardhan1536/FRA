@@ -560,7 +560,7 @@ const MapView: React.FC = () => {
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden map-container">
           <MapContainer
             center={[22.9734, 78.6569] as [number, number]}
             zoom={13}

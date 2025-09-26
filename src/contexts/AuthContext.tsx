@@ -25,17 +25,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For development, set a default user and skip Firebase authentication
+    // For development, start with no user to show login page
     // In production, uncomment the Firebase code below
-    const defaultUser: User = {
-      role: 'GramaSabha',
-      village: 'Demo Village',
-      language: 'en',
-      uid: 'demo-user-123',
-      email: 'demo@gramasabha.gov.in',
-      displayName: 'Demo User'
-    };
-    setCurrentUser(defaultUser);
+    setCurrentUser(null);
     setLoading(false);
     
     // Firebase authentication (commented for development)
@@ -63,13 +55,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     // For development, create a mock user
     // In production, use: await signInWithEmailAndPassword(auth, email, password);
+    
+    // Determine role based on email for demo purposes
+    let role: 'GramaSabha' | 'SDLC' | 'DLC' = 'GramaSabha';
+    let district: string | undefined = undefined;
+    let displayName = 'Demo User';
+    
+    if (email.includes('sdlc')) {
+      role = 'SDLC';
+      district = 'Demo District';
+      displayName = 'SDLC Officer';
+    } else if (email.includes('dlc')) {
+      role = 'DLC';
+      district = 'Demo District';
+      displayName = 'DLC Officer';
+    } else if (email.includes('gramasabha')) {
+      role = 'GramaSabha';
+      displayName = 'Grama Sabha Officer';
+    }
+    
     const userData: User = {
-      role: 'GramaSabha',
+      role,
       village: 'Demo Village',
+      district,
       language: 'en',
-      uid: 'demo-user-123',
+      uid: `demo-user-${Date.now()}`,
       email: email,
-      displayName: 'Demo User'
+      displayName
     };
     setCurrentUser(userData);
   };

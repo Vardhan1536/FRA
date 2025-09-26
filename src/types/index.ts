@@ -1,6 +1,7 @@
 export interface User {
   role: 'GramaSabha' | 'SDLC' | 'DLC';
   village: string;
+  district?: string; // Required for SDLC role
   language: string;
   uid: string;
   email: string;
@@ -18,7 +19,12 @@ export interface Claim {
   applicantName: string;
   claimType: 'IFR' | 'CR' | 'CFR';
   rejectionReason?: string;
+  reason?: string; // For SDLC approval/rejection reasons
   qrCode?: string;
+  dssValidation?: boolean; // DSS validation status
+  dssSuggestion?: string; // DSS recommendation
+  reviewedBy?: string; // SDLC reviewer
+  reviewedAt?: Date; // Review timestamp
 }
 
 export interface Layer {
@@ -31,7 +37,7 @@ export interface Layer {
 
 export interface Alert {
   id: string;
-  type: 'encroachment' | 'deforestation' | 'claim_update' | 'system';
+  type: 'encroachment' | 'deforestation' | 'claim_update' | 'system' | 'dss_flag' | 'urgent_review' | 'anomaly';
   location: string;
   coordinates: [number, number];
   timestamp: Date;
@@ -39,6 +45,8 @@ export interface Alert {
   resolved: boolean;
   severity: 'low' | 'medium' | 'high';
   acknowledgedBy?: string;
+  acknowledgedAt?: Date;
+  comments?: string; // Optional comments when acknowledging
 }
 
 export interface DashboardStats {
@@ -55,4 +63,38 @@ export interface MapFilter {
   district: string;
   village: string;
   tribalGroup: string;
+}
+
+// SDLC-specific interfaces
+export interface DSSValidation {
+  claimId: string;
+  isValid: boolean;
+  confidence: number; // 0-100
+  suggestions: string[];
+  riskFactors: string[];
+  recommendedAction: 'approve' | 'reject' | 'review';
+  timestamp: Date;
+}
+
+export interface ClaimReview {
+  claimId: string;
+  reviewerId: string;
+  action: 'approve' | 'reject';
+  reason: string;
+  dssValidation: DSSValidation;
+  timestamp: Date;
+}
+
+export interface SDLCDashboardStats {
+  totalClaims: number;
+  pendingReview: number;
+  approvedToday: number;
+  rejectedToday: number;
+  dssFlagged: number;
+  urgentAlerts: number;
+  schemeEligibility: {
+    eligible: number;
+    ineligible: number;
+    pending: number;
+  };
 }

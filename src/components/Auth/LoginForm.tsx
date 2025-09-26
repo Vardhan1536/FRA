@@ -10,11 +10,18 @@ const LoginForm: React.FC = () => {
   const { t } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('demo@gramasabha.gov.in');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Default credentials for different roles
+  const defaultCredentials = [
+    { email: 'sdlc@fra.gov.in', password: 'sdlc123', role: 'SDLC', description: 'SDLC Officer' },
+    { email: 'dlc@fra.gov.in', password: 'dlc123', role: 'DLC', description: 'DLC Officer' },
+    { email: 'gramasabha@fra.gov.in', password: 'gs123', role: 'GramaSabha', description: 'Grama Sabha Officer' }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,20 +29,40 @@ const LoginForm: React.FC = () => {
     setError('');
 
     try {
-      // Use the authentication context
-      if (email === 'demo@gramasabha.gov.in' && password === 'password123') {
+      // Check if credentials match any default credentials
+      const matchedCredential = defaultCredentials.find(
+        cred => cred.email === email && cred.password === password
+      );
+
+      if (matchedCredential) {
         await authLogin(email, password);
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        navigate('/grama-sabha/dashboard');
+        
+        // Navigate based on role
+        switch (matchedCredential.role) {
+          case 'SDLC':
+            navigate('/sdlc/dashboard');
+            break;
+          case 'DLC':
+            navigate('/dlc/dashboard');
+            break;
+          default:
+            navigate('/grama-sabha/dashboard');
+        }
       } else {
         throw new Error('Invalid credentials');
       }
     } catch {
-      setError('Invalid email or password. Use demo@gramasabha.gov.in / password123');
+      setError('Invalid email or password. Please use one of the provided demo credentials.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickLogin = (credential: typeof defaultCredentials[0]) => {
+    setEmail(credential.email);
+    setPassword(credential.password);
   };
 
   return (
@@ -124,12 +151,37 @@ const LoginForm: React.FC = () => {
         </form>
 
         {/* Demo credentials */}
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            Demo Credentials:<br />
-            <strong>Email:</strong> demo@gramasabha.gov.in<br />
-            <strong>Password:</strong> password123
+        <div className="mt-6 space-y-3">
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center font-medium">
+            Demo Credentials - Click to auto-fill:
           </p>
+          {defaultCredentials.map((credential, index) => (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleQuickLogin(credential)}
+              className="w-full p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-left"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {credential.description}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {credential.email} / {credential.password}
+                  </p>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  credential.role === 'SDLC' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300' :
+                  credential.role === 'DLC' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' :
+                  'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300'
+                }`}>
+                  {credential.role}
+                </div>
+              </div>
+            </motion.button>
+          ))}
         </div>
       </motion.div>
     </div>
