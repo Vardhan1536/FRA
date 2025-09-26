@@ -9,7 +9,8 @@ import {
   Settings, 
   FileText, 
   LogOut,
-  X
+  X,
+  Building
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
@@ -40,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     } else if (currentUser?.role === 'DLC') {
       return [
         { path: '/dlc/dashboard', icon: Home, label: 'DLC Dashboard' },
+        { path: '/dlc/schemes', icon: Building, label: 'Schemes' },
         { path: '/dlc/alerts', icon: AlertTriangle, label: t('alerts') },
         { path: '/dlc/settings', icon: Settings, label: t('settings') }
       ];

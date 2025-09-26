@@ -98,3 +98,62 @@ export interface SDLCDashboardStats {
     pending: number;
   };
 }
+
+// DLC-specific interfaces
+export interface Scheme {
+  id: string;
+  name: string;
+  type: 'New' | 'Old';
+  eligibilityCriteria: string[];
+  nonEligibilityCriteria: string[];
+  historicalBeneficiaries: number;
+  allocatedRegions: string[];
+  description: string;
+  startDate: Date;
+  endDate?: Date;
+  budget: number;
+  status: 'Active' | 'Inactive' | 'Completed';
+}
+
+export interface DLCDashboardStats {
+  totalClaims: number;
+  approvedClaims: number;
+  rejectedClaims: number;
+  pendingClaims: number;
+  escalatedClaims: number;
+  districtAlerts: number;
+  schemeCoverage: {
+    totalSchemes: number;
+    activeSchemes: number;
+    beneficiaries: number;
+    coveragePercentage: number;
+  };
+  regionalBreakdown: {
+    village: string;
+    totalClaims: number;
+    approvedClaims: number;
+    rejectedClaims: number;
+    pendingClaims: number;
+  }[];
+}
+
+export interface ClaimEscalation {
+  claimId: string;
+  escalatedBy: string; // SDLC officer
+  escalatedAt: Date;
+  reason: string;
+  sdlcDecision: 'Approved' | 'Rejected';
+  sdlcReason: string;
+  dssValidation: DSSValidation;
+  supportingDocuments: string[];
+}
+
+export interface DLCCaimReview {
+  claimId: string;
+  reviewerId: string;
+  action: 'approve' | 'reject';
+  reason: string;
+  escalationData: ClaimEscalation;
+  timestamp: Date;
+  finalDecision: boolean; // Only DLC can make final decisions
+}

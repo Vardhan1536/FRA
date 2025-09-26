@@ -13,6 +13,11 @@ import Settings from './pages/grama-sabha/Settings';
 import SDLCDashboard from './pages/sdlc/Dashboard';
 import SDLCAlerts from './pages/sdlc/Alerts';
 import SDLCSettings from './pages/sdlc/Settings';
+// DLC pages
+import DLCDashboard from './pages/dlc/Dashboard';
+import DLCSchemes from './pages/dlc/Schemes';
+import DLCAlerts from './pages/dlc/Alerts';
+import DLCSettings from './pages/dlc/Settings';
 import './i18n';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,7 +89,7 @@ const AppContent: React.FC = () => {
           <Route path="settings" element={<SDLCSettings />} />
         </Route>
 
-        {/* DLC Routes - Placeholder for future implementation */}
+        {/* DLC Routes */}
         <Route 
           path="/dlc/*" 
           element={
@@ -94,9 +99,10 @@ const AppContent: React.FC = () => {
           } 
         >
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">DLC Dashboard - Coming Soon</h1></div>} />
-          <Route path="alerts" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">DLC Alerts - Coming Soon</h1></div>} />
-          <Route path="settings" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">DLC Settings - Coming Soon</h1></div>} />
+          <Route path="dashboard" element={<DLCDashboard />} />
+          <Route path="schemes" element={<DLCSchemes />} />
+          <Route path="alerts" element={<DLCAlerts />} />
+          <Route path="settings" element={<DLCSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
