@@ -41,10 +41,10 @@ const Alerts: React.FC = () => {
     loadAlerts();
   }, []);
 
-  const loadAlerts = async () => {
+  const loadAlerts = async (forceRefresh: boolean = false) => {
     setLoading(true);
     try {
-      const alertsData = await alertsAPI.getAll();
+      const alertsData = await alertsAPI.getAll(forceRefresh);
       setAlerts(alertsData);
     } catch (error) {
       console.error('Failed to load alerts:', error);

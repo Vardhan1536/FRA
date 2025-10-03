@@ -11,10 +11,12 @@ import Alerts from './pages/grama-sabha/Alerts';
 import Settings from './pages/grama-sabha/Settings';
 // SDLC pages
 import SDLCDashboard from './pages/sdlc/Dashboard';
+import SDLCClaims from './pages/sdlc/Claims';
 import SDLCAlerts from './pages/sdlc/Alerts';
 import SDLCSettings from './pages/sdlc/Settings';
 // DLC pages
 import DLCDashboard from './pages/dlc/Dashboard';
+import DLCClaims from './pages/dlc/Claims';
 import DLCSchemes from './pages/dlc/Schemes';
 import DLCAlerts from './pages/dlc/Alerts';
 import DLCSettings from './pages/dlc/Settings';
@@ -85,6 +87,7 @@ const AppContent: React.FC = () => {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<SDLCDashboard />} />
+          <Route path="claims" element={<SDLCClaims />} />
           <Route path="alerts" element={<SDLCAlerts />} />
           <Route path="settings" element={<SDLCSettings />} />
         </Route>
@@ -100,6 +103,7 @@ const AppContent: React.FC = () => {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DLCDashboard />} />
+          <Route path="claims" element={<DLCClaims />} />
           <Route path="schemes" element={<DLCSchemes />} />
           <Route path="alerts" element={<DLCAlerts />} />
           <Route path="settings" element={<DLCSettings />} />

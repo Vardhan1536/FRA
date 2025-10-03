@@ -292,3 +292,25 @@ export interface NewClaimSubmission {
     dlc?: any;
   };
 }
+
+// Scheme eligibility interfaces
+export interface SchemeEligibility {
+  scheme_name: string;
+  beneficiary_id: string;
+  eligibility: boolean;
+  reasons: string[];
+}
+
+export interface BeneficiarySchemeEligibility {
+  beneficiary_id: string;
+  schemes_eligibility: SchemeEligibility[];
+}
+
+export interface SchemeEligibilityGroup {
+  scheme_name: string;
+  eligible_beneficiaries: string[];
+  ineligible_beneficiaries: {
+    beneficiary_id: string;
+    reasons: string[];
+  }[];
+}

@@ -35,12 +35,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     if (currentUser?.role === 'SDLC') {
       return [
         { path: '/sdlc/dashboard', icon: Home, label: t('sdlc_dashboard') },
+        { path: '/sdlc/claims', icon: FileText, label: t('claims') },
         { path: '/sdlc/alerts', icon: AlertTriangle, label: t('alerts') },
         { path: '/sdlc/settings', icon: Settings, label: t('settings') }
       ];
     } else if (currentUser?.role === 'DLC') {
       return [
         { path: '/dlc/dashboard', icon: Home, label: 'DLC Dashboard' },
+        { path: '/dlc/claims', icon: FileText, label: t('claims') },
         { path: '/dlc/schemes', icon: Building, label: 'Schemes' },
         { path: '/dlc/alerts', icon: AlertTriangle, label: t('alerts') },
         { path: '/dlc/settings', icon: Settings, label: t('settings') }

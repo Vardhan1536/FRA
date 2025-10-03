@@ -36,11 +36,11 @@ const Alerts: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const loadAlerts = async () => {
+  const loadAlerts = async (forceRefresh: boolean = false) => {
     setLoading(true);
     try {
       // Use the same monitoring API with user role for SDLC
-      const alertsData = await alertsAPI.getAll();
+      const alertsData = await alertsAPI.getAll(forceRefresh);
       setAlerts(alertsData);
     } catch (error) {
       console.error('Failed to load alerts:', error);
@@ -273,7 +273,7 @@ const Alerts: React.FC = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={loadAlerts}
+            onClick={() => loadAlerts(true)}
             disabled={loading}
             className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 transition-colors"
           >

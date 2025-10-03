@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,9 +9,11 @@ import {
   Globe, 
   Bell, 
   Wifi, 
-  WifiOff 
+  WifiOff,
+  Scale
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
+import LegalAssistanceModal from '../UI/LegalAssistanceModal';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -21,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme, language, setLanguage, offlineMode, dashboardStats } = useApp();
   const navigate = useNavigate();
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'hi' : 'en';
@@ -59,6 +62,16 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
+            {/* Legal Assistance */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setIsLegalModalOpen(true)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title="Legal Assistance"
+            >
+              <Scale className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+            </motion.button>
+
             {/* Offline indicator */}
             <div className="flex items-center space-x-2">
               {offlineMode ? (
@@ -116,6 +129,12 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           </div>
         </div>
       </div>
+      
+      {/* Legal Assistance Modal */}
+      <LegalAssistanceModal 
+        isOpen={isLegalModalOpen} 
+        onClose={() => setIsLegalModalOpen(false)} 
+      />
     </motion.header>
   );
 };

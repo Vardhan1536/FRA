@@ -18,7 +18,8 @@ import {
   Building,
   Map,
   Shield,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { Claim, NewClaimSubmission } from '../../types';
 import { claimsAPI } from '../../utils/api';
@@ -34,6 +35,9 @@ const Claims: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Pending' | 'Approved' | 'Rejected'>('all');
   const [activeTab, setActiveTab] = useState<'all' | 'pending'>('all');
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [isFromCache, setIsFromCache] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState<Partial<NewClaimSubmission>>({
@@ -53,8 +57,8 @@ const Claims: React.FC = () => {
     },
     admin_info: {
       village_id: 'VIL_000001',
-      village: '',
-      gp: '',
+      village: 'चिरमिरी',
+      gp: 'GP_फतेहपुर',
       block: 'Mandla',
       district: 'Mandla',
       state: 'Madhya Pradesh',
@@ -83,20 +87,77 @@ const Claims: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Village options
+  const villageOptions = [
+    { id: 'VIL_000001', name: 'चिरमिरी' },
+    { id: 'VIL_000002', name: 'पाकाला' },
+    { id: 'VIL_000003', name: 'चंबा' }
+  ];
+
   useEffect(() => {
     loadClaims();
     loadPendingClaims();
   }, []);
 
-  const loadClaims = async () => {
+  const loadClaims = async (currentRetryCount = 0) => {
     setLoading(true);
+    setRetryCount(currentRetryCount);
+    setIsRetrying(currentRetryCount > 0);
+    setIsFromCache(false);
+    
     try {
-      const claimsData = await claimsAPI.getAll();
+      // Get user role from localStorage or context
+      const userRole = localStorage.getItem('userRole') || 'GramaSabha';
+      console.log(`Loading claims for role: ${userRole} (attempt ${currentRetryCount + 1})`);
+      
+      // Fetch from API only
+      const claimsData = await claimsAPI.getBeneficiaries(userRole);
       setClaims(claimsData);
-    } catch (error) {
-      console.error('Failed to load claims:', error);
-    } finally {
+      console.log('Loaded claims from API:', claimsData.length);
       setLoading(false);
+      setIsRetrying(false);
+      setRetryCount(0);
+      setIsFromCache(false);
+    } catch (error) {
+      console.error(`Failed to load claims from API (attempt ${currentRetryCount + 1}):`, error);
+      
+      // Check if we have cached data first
+      const userRole = localStorage.getItem('userRole') || 'GramaSabha';
+      const cachedData = localStorage.getItem(`beneficiaries_${userRole}`);
+      
+      if (cachedData && currentRetryCount === 0) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          const cacheAge = Date.now() - parsed.timestamp;
+          const maxCacheAge = 30 * 60 * 1000; // 30 minutes
+          
+          if (cacheAge < maxCacheAge) {
+            console.log(`Loading ${parsed.data.length} claims from cache for role: ${userRole} (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+            setClaims(parsed.data);
+            setLoading(false);
+            setIsRetrying(false);
+            setRetryCount(0);
+            setIsFromCache(true);
+            return;
+          }
+        } catch (cacheError) {
+          console.error('Error parsing cached data:', cacheError);
+        }
+      }
+      
+      // Retry logic - wait and retry up to 5 times with longer intervals
+      if (currentRetryCount < 5) {
+        const retryDelay = Math.min(10000 + (currentRetryCount * 5000), 30000); // 10s, 15s, 20s, 25s, 30s
+        console.log(`Retrying in ${retryDelay / 1000} seconds... (attempt ${currentRetryCount + 1}/5)`);
+        setTimeout(() => {
+          loadClaims(currentRetryCount + 1);
+        }, retryDelay);
+      } else {
+        console.error('Max retry attempts reached. Please check if the API server is running.');
+        setLoading(false);
+        setIsRetrying(false);
+        setClaims([]);
+      }
     }
   };
 
@@ -139,6 +200,23 @@ const Claims: React.FC = () => {
         return;
       }
 
+      // Ensure polygon coordinates are properly formatted
+      if (formData.title_info?.polygon_coordinates && formData.title_info.polygon_coordinates.length > 0) {
+        // Validate that coordinates are in the correct format
+        const coords = formData.title_info.polygon_coordinates[0];
+        if (!Array.isArray(coords) || coords.length < 3) {
+          alert('GPS coordinates must be a valid polygon with at least 3 points');
+          return;
+        }
+        // Check that each coordinate is a valid [lng, lat] pair
+        for (const coord of coords) {
+          if (!Array.isArray(coord) || coord.length !== 2 || typeof coord[0] !== 'number' || typeof coord[1] !== 'number') {
+            alert('GPS coordinates must be valid [longitude, latitude] pairs');
+            return;
+          }
+        }
+      }
+
       // Create the submission data
       const submissionData: NewClaimSubmission = {
         beneficiary_id: '', // Will be generated by API
@@ -177,8 +255,8 @@ const Claims: React.FC = () => {
         },
         admin_info: {
           village_id: 'VIL_000001',
-          village: '',
-          gp: '',
+          village: 'चिरमिरी',
+          gp: 'GP_फतेहपुर',
           block: 'Mandla',
           district: 'Mandla',
           state: 'Madhya Pradesh',
@@ -320,14 +398,35 @@ const Claims: React.FC = () => {
           </p>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          onClick={() => setShowNewClaimForm(true)}
-          className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span>{t('submit_claim')}</span>
-        </motion.button>
+        <div className="flex items-center space-x-3">
+          {isFromCache && (
+            <div className="text-sm text-blue-600 dark:text-blue-400">
+              📦 Loaded from cache
+            </div>
+          )}
+          {isRetrying && (
+            <div className="text-sm text-amber-600 dark:text-amber-400">
+              Retrying... (Attempt {retryCount + 1}/5)
+            </div>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => loadClaims(0)}
+            disabled={loading}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+          >
+            <Download className="w-5 h-5" />
+            <span>{loading ? (isRetrying ? 'Retrying...' : 'Loading...') : 'Refresh'}</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => setShowNewClaimForm(true)}
+            className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>{t('submit_claim')}</span>
+          </motion.button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -393,8 +492,18 @@ const Claims: React.FC = () => {
 
       {/* Claims Grid */}
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex flex-col justify-center items-center py-12 space-y-4">
           <LoadingSpinner size="lg" />
+          {isRetrying && (
+            <div className="text-center">
+              <p className="text-amber-600 dark:text-amber-400 font-medium">
+                API server not responding. Retrying...
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Attempt {retryCount + 1} of 5
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -440,6 +549,64 @@ const Claims: React.FC = () => {
                 </div>
               )}
 
+              {/* Status Information */}
+              {claim.statuses && (
+                <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Shield className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Status Details</span>
+                  </div>
+                  <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="flex justify-between">
+                      <span>GramaSabha:</span>
+                      <span className={`font-medium ${
+                        claim.statuses.gramasabha === 'Approved' ? 'text-green-600' : 
+                        claim.statuses.gramasabha === 'Rejected' ? 'text-red-600' : 'text-yellow-600'
+                      }`}>
+                        {claim.statuses.gramasabha}
+                      </span>
+                    </div>
+                    {claim.statuses.sdlc && (
+                      <div className="flex justify-between">
+                        <span>SDLC Review:</span>
+                        <span className={`font-medium ${claim.statuses.sdlc.review ? 'text-green-600' : 'text-yellow-600'}`}>
+                          {claim.statuses.sdlc.review ? 'Completed' : 'Pending'}
+                        </span>
+                      </div>
+                    )}
+                    {claim.statuses.dlc && (
+                      <div className="flex justify-between">
+                        <span>DLC:</span>
+                        <span className="font-medium text-blue-600">Active</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* SDLC Remarks */}
+              {claim.statuses?.sdlc?.remarks && claim.statuses.sdlc.remarks.length > 0 && (
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-sm font-medium text-amber-800 dark:text-amber-300">SDLC Remarks</span>
+                  </div>
+                  <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                    {claim.statuses.sdlc.remarks.slice(0, 2).map((remark, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="text-amber-600 dark:text-amber-400">•</span>
+                        <span className="flex-1">{remark}</span>
+                      </div>
+                    ))}
+                    {claim.statuses.sdlc.remarks.length > 2 && (
+                      <div className="text-amber-600 dark:text-amber-400 text-xs">
+                        +{claim.statuses.sdlc.remarks.length - 2} more remarks
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Administrative Information */}
               {claim.admin_info && (
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -449,7 +616,7 @@ const Claims: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Building className="w-4 h-4" />
-                    <span>GP: {claim.admin_info.gp}</span>
+                    <span>GP: {claim.admin_info.gp} ({claim.admin_info.gp_id})</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Map className="w-4 h-4" />
@@ -692,14 +859,25 @@ const Claims: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Village *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.admin_info?.village || ''}
-                      onChange={(e) => handleInputChange('admin_info', 'village', e.target.value)}
+                    <select 
+                      required 
+                      value={formData.admin_info?.village_id || ''}
+                      onChange={(e) => {
+                        const selectedVillage = villageOptions.find(v => v.id === e.target.value);
+                        if (selectedVillage) {
+                          handleInputChange('admin_info', 'village_id', selectedVillage.id);
+                          handleInputChange('admin_info', 'village', selectedVillage.name);
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder="Enter village name"
-                    />
+                    >
+                      <option value="">Select Village</option>
+                      {villageOptions.map((village) => (
+                        <option key={village.id} value={village.id}>
+                          {village.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -708,11 +886,11 @@ const Claims: React.FC = () => {
                     <input
                       type="text"
                       required
-                      value={formData.admin_info?.gp || ''}
-                      onChange={(e) => handleInputChange('admin_info', 'gp', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder="Enter Gram Panchayat name"
+                      readOnly
+                      value="GP_फतेहपुर"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed"
                     />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Default Gram Panchayat</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -821,20 +999,139 @@ const Claims: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       GPS Coordinates (Optional)
                     </label>
-                    <textarea
-                      value={JSON.stringify(formData.title_info?.polygon_coordinates || [])}
-                      onChange={(e) => {
-                        try {
-                          const coords = JSON.parse(e.target.value);
-                          handleInputChange('title_info', 'polygon_coordinates', coords);
-                        } catch (error) {
-                          // Invalid JSON, ignore
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      rows={3}
-                      placeholder="Enter GPS coordinates or polygon coordinates (JSON format)"
-                    />
+                    <div className="space-y-4">
+                      {/* Simple coordinate input */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            Longitude (X)
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="80.27602945502146"
+                            value={formData.title_info?.polygon_coordinates?.[0]?.[0]?.[0] || ''}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                            onChange={(e) => {
+                              const lng = parseFloat(e.target.value);
+                              if (!isNaN(lng)) {
+                                // Create a simple polygon with the provided longitude
+                                const currentCoords = formData.title_info?.polygon_coordinates || [];
+                                if (currentCoords.length > 0 && currentCoords[0].length > 0) {
+                                  const lat = currentCoords[0][0][1] || 22.220035169973066;
+                                  const newCoords = [[[lng, lat], [lng + 0.001, lat], [lng + 0.001, lat + 0.001], [lng, lat + 0.001], [lng, lat]]];
+                                  handleInputChange('title_info', 'polygon_coordinates', newCoords);
+                                } else {
+                                  const lat = 22.220035169973066;
+                                  const newCoords = [[[lng, lat], [lng + 0.001, lat], [lng + 0.001, lat + 0.001], [lng, lat + 0.001], [lng, lat]]];
+                                  handleInputChange('title_info', 'polygon_coordinates', newCoords);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            Latitude (Y)
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="22.220035169973066"
+                            value={formData.title_info?.polygon_coordinates?.[0]?.[0]?.[1] || ''}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                            onChange={(e) => {
+                              const lat = parseFloat(e.target.value);
+                              if (!isNaN(lat)) {
+                                // Create a simple polygon with the provided latitude
+                                const currentCoords = formData.title_info?.polygon_coordinates || [];
+                                if (currentCoords.length > 0 && currentCoords[0].length > 0) {
+                                  const lng = currentCoords[0][0][0] || 80.27602945502146;
+                                  const newCoords = [[[lng, lat], [lng + 0.001, lat], [lng + 0.001, lat + 0.001], [lng, lat + 0.001], [lng, lat]]];
+                                  handleInputChange('title_info', 'polygon_coordinates', newCoords);
+                                } else {
+                                  const lng = 80.27602945502146;
+                                  const newCoords = [[[lng, lat], [lng + 0.001, lat], [lng + 0.001, lat + 0.001], [lng, lat + 0.001], [lng, lat]]];
+                                  handleInputChange('title_info', 'polygon_coordinates', newCoords);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Advanced JSON input */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                          Advanced: Full Polygon Coordinates (JSON)
+                        </label>
+                        <textarea
+                          value={JSON.stringify(formData.title_info?.polygon_coordinates || [])}
+                          onChange={(e) => {
+                            try {
+                              const coords = JSON.parse(e.target.value);
+                              handleInputChange('title_info', 'polygon_coordinates', coords);
+                            } catch (error) {
+                              // Invalid JSON, ignore
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                          rows={3}
+                          placeholder="Enter polygon coordinates in JSON format..."
+                        />
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Set example coordinates for चिरमिरी
+                            const exampleCoords = [[[80.27602945502146, 22.220035169973066], [80.27605892706691, 22.22059078045775], [80.273777701138, 22.220758461552585], [80.27414972299651, 22.22005157078757], [80.27431556696547, 22.218964613970122], [80.27552253865323, 22.21868529244753], [80.27602945502146, 22.220035169973066]]];
+                            handleInputChange('title_info', 'polygon_coordinates', exampleCoords);
+                          }}
+                          className="text-xs px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors"
+                        >
+                          चिरमिरी Example
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Set example coordinates for पाकाला
+                            const exampleCoords = [[[80.54635212060894, 22.79320098273347], [80.54602495210914, 22.793732930673524], [80.54504098599959, 22.793350670018256], [80.54396184629934, 22.793092738078585], [80.54531552764372, 22.79101500280458], [80.54601006158536, 22.791188448636703], [80.54635212060894, 22.79320098273347]]];
+                            handleInputChange('title_info', 'polygon_coordinates', exampleCoords);
+                          }}
+                          className="text-xs px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors"
+                        >
+                          पाकाला Example
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Set example coordinates for चंबा
+                            const exampleCoords = [[[80.53635212060894, 22.75320098273347], [80.53602495210914, 22.753732930673524], [80.53504098599959, 22.753350670018256], [80.53396184629934, 22.753092738078585], [80.53531552764372, 22.75101500280458], [80.53601006158536, 22.751188448636703], [80.53635212060894, 22.75320098273347]]];
+                            handleInputChange('title_info', 'polygon_coordinates', exampleCoords);
+                          }}
+                          className="text-xs px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors"
+                        >
+                          चंबा Example
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleInputChange('title_info', 'polygon_coordinates', []);
+                          }}
+                          className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="mb-1">• Use simple Longitude/Latitude inputs for basic coordinates</p>
+                        <p className="mb-1">• Use Advanced JSON input for complex polygon shapes</p>
+                        <p>• Click village examples to use predefined coordinates</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1117,7 +1414,7 @@ const Claims: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gram Panchayat</h4>
-                      <p className="text-gray-900 dark:text-white">{selectedClaim.admin_info.gp}</p>
+                      <p className="text-gray-900 dark:text-white">{selectedClaim.admin_info.gp} ({selectedClaim.admin_info.gp_id})</p>
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Block</h4>
@@ -1209,6 +1506,69 @@ const Claims: React.FC = () => {
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</h4>
                         <p className="text-gray-900 dark:text-white">{selectedClaim.vulnerability.category}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Status Details */}
+              {selectedClaim.statuses && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <h3 className="text-lg font-semibold text-indigo-800 dark:text-indigo-300">
+                      Status Details
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GramaSabha</h4>
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          selectedClaim.statuses.gramasabha === 'Approved' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                            : selectedClaim.statuses.gramasabha === 'Rejected'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                        }`}>
+                          {selectedClaim.statuses.gramasabha}
+                        </span>
+                      </div>
+                      {selectedClaim.statuses.sdlc && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SDLC Review</h4>
+                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            selectedClaim.statuses.sdlc.review
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                          }`}>
+                            {selectedClaim.statuses.sdlc.review ? 'Completed' : 'Pending'}
+                          </span>
+                        </div>
+                      )}
+                      {selectedClaim.statuses.dlc && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DLC</h4>
+                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                            Active
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* SDLC Remarks */}
+                    {selectedClaim.statuses.sdlc?.remarks && selectedClaim.statuses.sdlc.remarks.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SDLC Remarks</h4>
+                        <div className="space-y-2">
+                          {selectedClaim.statuses.sdlc.remarks.map((remark, index) => (
+                            <div key={index} className="flex items-start space-x-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{remark}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

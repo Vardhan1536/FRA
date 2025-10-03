@@ -12,13 +12,14 @@ import {
   AlertCircle,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import { Claim } from '../../types';
-import { sdlcAPI } from '../../utils/api';
+import { dlcAPI } from '../../utils/api';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 
-const SDLCClaims: React.FC = () => {
+const DLCClaims: React.FC = () => {
   const { t } = useTranslation();
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,21 +41,21 @@ const SDLCClaims: React.FC = () => {
     setIsFromCache(false);
     
     try {
-      console.log(`Loading SDLC claims (attempt ${currentRetryCount + 1})`);
+      console.log(`Loading DLC claims (attempt ${currentRetryCount + 1})`);
       
       // Fetch from API
-      const claimsData = await sdlcAPI.getClaimsForReview();
+      const claimsData = await dlcAPI.getEscalatedClaims();
       setClaims(claimsData);
-      console.log('Loaded SDLC claims from API:', claimsData.length);
+      console.log('Loaded DLC claims from API:', claimsData.length);
       setLoading(false);
       setIsRetrying(false);
       setRetryCount(0);
       setIsFromCache(false);
     } catch (error) {
-      console.error(`Failed to load SDLC claims (attempt ${currentRetryCount + 1}):`, error);
+      console.error(`Failed to load DLC claims (attempt ${currentRetryCount + 1}):`, error);
       
       // Check if we have cached data first
-      const cachedData = localStorage.getItem('beneficiaries_SDLC');
+      const cachedData = localStorage.getItem('beneficiaries_DLC');
       
       if (cachedData && currentRetryCount === 0) {
         try {
@@ -63,7 +64,7 @@ const SDLCClaims: React.FC = () => {
           const maxCacheAge = 30 * 60 * 1000; // 30 minutes
           
           if (cacheAge < maxCacheAge) {
-            console.log(`Loading ${parsed.data.length} SDLC claims from cache (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+            console.log(`Loading ${parsed.data.length} DLC claims from cache (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
             setClaims(parsed.data);
             setLoading(false);
             setIsRetrying(false);
@@ -72,7 +73,7 @@ const SDLCClaims: React.FC = () => {
             return;
           }
         } catch (cacheError) {
-          console.error('Error parsing SDLC cached data:', cacheError);
+          console.error('Error parsing DLC cached data:', cacheError);
         }
       }
       
@@ -92,24 +93,32 @@ const SDLCClaims: React.FC = () => {
     }
   };
 
-  const handleCheckEligibility = async (claimId: string) => {
+  const handleFinalDecision = async (claimId: string, decision: 'approve' | 'reject', remarks: string) => {
     try {
-      console.log(`Checking eligibility for claim: ${claimId}`);
-      // TODO: Implement eligibility check logic
-      alert(`Eligibility check initiated for claim: ${claimId}`);
+      console.log(`Making final decision for claim ${claimId}: ${decision} with remarks: ${remarks}`);
+      // TODO: Implement final decision logic
+      alert(`Final decision made for claim: ${claimId} - ${decision}`);
+      // Reload claims after decision
+      loadClaims(0);
     } catch (error) {
-      console.error('Error checking eligibility:', error);
+      console.error('Error making final decision:', error);
     }
   };
 
-  const handleReviewClaim = async (claimId: string, decision: 'approve' | 'reject', remarks: string) => {
+  const handleExportClaims = async () => {
     try {
-      console.log(`Reviewing claim ${claimId} with decision: ${decision} and remarks: ${remarks}`);
-      await sdlcAPI.reviewClaim(claimId, decision, remarks);
-      // Reload claims after review
-      loadClaims(0);
+      console.log('Exporting DLC claims to CSV');
+      const blob = await dlcAPI.exportDLCCaimsToCSV(claims);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dlc-claims-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error('Error reviewing claim:', error);
+      console.error('Error exporting claims:', error);
     }
   };
 
@@ -142,10 +151,10 @@ const SDLCClaims: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              SDLC Claims Review
+              DLC Final Review
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Review and process forest rights claims
+              Final review and decision on escalated forest rights claims
             </p>
           </div>
 
@@ -160,6 +169,15 @@ const SDLCClaims: React.FC = () => {
                 Retrying... (Attempt {retryCount + 1}/5)
               </div>
             )}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              onClick={handleExportClaims}
+              disabled={loading || claims.length === 0}
+              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+            >
+              <FileText className="w-5 h-5" />
+              <span>Export CSV</span>
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               onClick={() => loadClaims(0)}
@@ -286,6 +304,12 @@ const SDLCClaims: React.FC = () => {
                             </span>
                           </div>
                         )}
+                        {claim.statuses.dlc && (
+                          <div className="flex justify-between">
+                            <span>DLC Decision:</span>
+                            <span className="font-medium text-blue-600">Final Decision Made</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -341,11 +365,11 @@ const SDLCClaims: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleCheckEligibility(claim.id)}
+                      onClick={() => handleFinalDecision(claim.id, 'approve', '')}
                       className="flex-1 flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                       <Check className="w-4 h-4" />
-                      <span>Check Eligibility</span>
+                      <span>Final Decision</span>
                     </motion.button>
                   </div>
                 </div>
@@ -364,7 +388,7 @@ const SDLCClaims: React.FC = () => {
             <p className="text-gray-500 dark:text-gray-400">
               {searchTerm || statusFilter !== 'all' 
                 ? 'Try adjusting your search or filter criteria.'
-                : 'No claims are available for SDLC review at the moment.'
+                : 'No claims are available for DLC final review at the moment.'
               }
             </p>
           </div>
@@ -462,6 +486,14 @@ const SDLCClaims: React.FC = () => {
                               </span>
                             </div>
                           )}
+                          {selectedClaim.statuses.dlc && (
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DLC Decision</h4>
+                              <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                                Final Decision Made
+                              </span>
+                            </div>
+                          )}
                         </div>
                         
                         {/* SDLC Remarks */}
@@ -487,11 +519,19 @@ const SDLCClaims: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleCheckEligibility(selectedClaim.id)}
+                      onClick={() => handleFinalDecision(selectedClaim.id, 'approve', '')}
                       className="flex-1 flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
                       <Check className="w-5 h-5" />
-                      <span>Check Eligibility</span>
+                      <span>Approve Claim</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleFinalDecision(selectedClaim.id, 'reject', '')}
+                      className="flex-1 flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                      <span>Reject Claim</span>
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -512,4 +552,4 @@ const SDLCClaims: React.FC = () => {
   );
 };
 
-export default SDLCClaims;
+export default DLCClaims;

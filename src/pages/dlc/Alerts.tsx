@@ -287,12 +287,12 @@ const Alerts: React.FC = () => {
     loadAlerts();
   }, []);
 
-  const loadAlerts = async () => {
+  const loadAlerts = async (forceRefresh: boolean = false) => {
     console.log('DLC Alerts: loadAlerts called');
     setLoading(true);
     try {
       // Use the same monitoring API with user role for DLC
-      const alertsData = await alertsAPI.getAll();
+      const alertsData = await alertsAPI.getAll(forceRefresh);
       console.log('DLC Alerts: Received alerts data:', alertsData.length, 'alerts');
       setAlerts(alertsData);
     } catch (error) {
