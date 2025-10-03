@@ -25,9 +25,11 @@ import {
 import { Alert } from '../../types';
 import { alertsAPI } from '../../utils/api';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Alerts: React.FC = () => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,9 +44,11 @@ const Alerts: React.FC = () => {
   }, []);
 
   const loadAlerts = async (forceRefresh: boolean = false) => {
+    if (!currentUser?.role) return;
+    
     setLoading(true);
     try {
-      const alertsData = await alertsAPI.getAll(forceRefresh);
+      const alertsData = await alertsAPI.getAll(currentUser.role, forceRefresh);
       setAlerts(alertsData);
     } catch (error) {
       console.error('Failed to load alerts:', error);
@@ -149,13 +153,28 @@ const Alerts: React.FC = () => {
       return alert.changeDetection.change_type.replace(/_/g, ' ');
     }
     
+    // For regular alerts, provide proper labels
     switch (alert.type) {
-      case 'encroachment': return 'Encroachment';
-      case 'deforestation': return 'Deforestation';
-      case 'claim_update': return 'Claim Update';
-      case 'system': return 'System';
-      case 'change_detection': return 'Change Detection';
-      default: return alert.type;
+      case 'encroachment': 
+        return 'Encroachment Alert';
+      case 'deforestation': 
+        return 'Deforestation Alert';
+      case 'claim_update': 
+        return 'Claim Update Notification';
+      case 'system': 
+        return 'System Notification';
+      case 'change_detection': 
+        return 'Change Detection Alert';
+      case 'urgent_review':
+        return 'Urgent Review Required';
+      case 'dss_flag':
+        return 'DSS Flag Alert';
+      case 'anomaly':
+        return 'Anomaly Detected';
+      case 'fraudulent_claims':
+        return 'Fraudulent Claims Alert';
+      default: 
+        return alert.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 

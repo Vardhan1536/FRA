@@ -86,8 +86,43 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
         return <TreePine className="w-5 h-5 text-red-600" />;
       case 'encroachment':
         return <Shield className="w-5 h-5 text-orange-600" />;
+      case 'fraudulent_claims':
+        return <AlertTriangle className="w-5 h-5 text-purple-600" />;
+      case 'claim_update':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
       default:
         return <AlertTriangle className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const getTypeLabel = (type: string, changeDetection?: any) => {
+    // For change detection alerts, use the specific change type
+    if (changeDetection) {
+      return `${changeDetection.change_type.replace(/_/g, ' ')} Alert`;
+    }
+
+    // For regular alerts, provide proper labels
+    switch (type) {
+      case 'change_detection':
+        return 'Change Detection Alert';
+      case 'urgent_review':
+        return 'Urgent Review Required';
+      case 'dss_flag':
+        return 'DSS Flag Alert';
+      case 'anomaly':
+        return 'Anomaly Detected';
+      case 'system':
+        return 'System Notification';
+      case 'deforestation':
+        return 'Deforestation Alert';
+      case 'encroachment':
+        return 'Encroachment Alert';
+      case 'fraudulent_claims':
+        return 'Fraudulent Claims Alert';
+      case 'claim_update':
+        return 'Claim Update Notification';
+      default:
+        return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
@@ -113,10 +148,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
           {getTypeIcon(alert.type, alert.changeDetection)}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {alert.changeDetection 
-                ? `${alert.changeDetection.change_type.replace(/_/g, ' ')} Alert`
-                : alert.type.replace('_', ' ').toUpperCase()
-              }
+              {getTypeLabel(alert.type, alert.changeDetection)}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {formatTimeAgo(alert.timestamp)}
@@ -194,9 +226,11 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
       )}
 
       <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs text-gray-500 dark:text-gray-400 max-w-xs truncate">
           {alert.coordinates && (
-            <span>Coordinates: {alert.coordinates[0]}, {alert.coordinates[1]}</span>
+            <span className="block truncate">
+              Coordinates: {alert.coordinates[0]?.toFixed(6)}, {alert.coordinates[1]?.toFixed(6)}
+            </span>
           )}
         </div>
         

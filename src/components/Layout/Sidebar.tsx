@@ -36,6 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       return [
         { path: '/sdlc/dashboard', icon: Home, label: t('sdlc_dashboard') },
         { path: '/sdlc/claims', icon: FileText, label: t('claims') },
+        { path: '/sdlc/schemes', icon: Building, label: 'Schemes' },
         { path: '/sdlc/alerts', icon: AlertTriangle, label: t('alerts') },
         { path: '/sdlc/settings', icon: Settings, label: t('settings') }
       ];
@@ -53,6 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/grama-sabha/dashboard', icon: Home, label: t('dashboard') },
         { path: '/grama-sabha/map', icon: Map, label: t('map') },
         { path: '/grama-sabha/claims', icon: FileText, label: t('claims') },
+        { path: '/grama-sabha/schemes', icon: Building, label: 'Schemes' },
         { path: '/grama-sabha/alerts', icon: AlertTriangle, label: t('alerts') },
         { path: '/grama-sabha/settings', icon: Settings, label: t('settings') }
       ];

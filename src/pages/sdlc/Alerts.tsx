@@ -15,9 +15,11 @@ import {
 import AlertCard from '../../components/SDLC/AlertCard';
 import { sdlcAPI, alertsAPI } from '../../utils/api';
 import { Alert } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Alerts: React.FC = () => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,10 +39,12 @@ const Alerts: React.FC = () => {
   }, []);
 
   const loadAlerts = async (forceRefresh: boolean = false) => {
+    if (!currentUser?.role) return;
+    
     setLoading(true);
     try {
       // Use the same monitoring API with user role for SDLC
-      const alertsData = await alertsAPI.getAll(forceRefresh);
+      const alertsData = await alertsAPI.getAll(currentUser.role, forceRefresh);
       setAlerts(alertsData);
     } catch (error) {
       console.error('Failed to load alerts:', error);
@@ -461,7 +465,9 @@ const Alerts: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
-                        <span className="font-medium">{selectedAlert.coordinates[0]}, {selectedAlert.coordinates[1]}</span>
+                        <span className="font-medium text-right max-w-48 truncate">
+                          {selectedAlert.coordinates[0]?.toFixed(6)}, {selectedAlert.coordinates[1]?.toFixed(6)}
+                        </span>
                       </div>
                     </div>
                   </div>

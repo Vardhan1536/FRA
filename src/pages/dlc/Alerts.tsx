@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { dlcAPI, alertsAPI } from '../../utils/api';
 import { Alert } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AlertCardProps {
   alert: Alert;
@@ -107,21 +108,28 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
       return `${changeDetection.change_type.replace(/_/g, ' ')} Alert`;
     }
 
+    // For regular alerts, provide proper labels
     switch (type) {
       case 'change_detection':
-        return 'Change Detection';
+        return 'Change Detection Alert';
       case 'deforestation':
-        return 'Deforestation';
+        return 'Deforestation Alert';
       case 'encroachment':
-        return 'Encroachment';
+        return 'Encroachment Alert';
       case 'fraudulent_claims':
-        return 'Fraudulent Claims';
+        return 'Fraudulent Claims Alert';
       case 'urgent_review':
-        return 'Urgent Review';
+        return 'Urgent Review Required';
       case 'system':
-        return 'System Alert';
+        return 'System Notification';
+      case 'dss_flag':
+        return 'DSS Flag Alert';
+      case 'anomaly':
+        return 'Anomaly Detected';
+      case 'claim_update':
+        return 'Claim Update Notification';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
@@ -270,6 +278,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
 
 const Alerts: React.FC = () => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -288,11 +297,13 @@ const Alerts: React.FC = () => {
   }, []);
 
   const loadAlerts = async (forceRefresh: boolean = false) => {
+    if (!currentUser?.role) return;
+    
     console.log('DLC Alerts: loadAlerts called');
     setLoading(true);
     try {
       // Use the same monitoring API with user role for DLC
-      const alertsData = await alertsAPI.getAll(forceRefresh);
+      const alertsData = await alertsAPI.getAll(currentUser.role, forceRefresh);
       console.log('DLC Alerts: Received alerts data:', alertsData.length, 'alerts');
       setAlerts(alertsData);
     } catch (error) {
@@ -549,7 +560,7 @@ const Alerts: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={loadAlerts}
+                onClick={() => loadAlerts(true)}
                 disabled={loading}
                 className="flex items-center space-x-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm"
               >
@@ -563,7 +574,7 @@ const Alerts: React.FC = () => {
                 onClick={async () => {
                   try {
                     await alertsAPI.refreshChangeDetection();
-                    await loadAlerts();
+                    await loadAlerts(true);
                   } catch (error) {
                     console.error('Failed to refresh change detection data:', error);
                   }
@@ -741,7 +752,9 @@ const Alerts: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
-                        <span className="font-medium">{selectedAlert.coordinates[0]}, {selectedAlert.coordinates[1]}</span>
+                        <span className="font-medium text-right max-w-48 truncate">
+                          {selectedAlert.coordinates[0]?.toFixed(6)}, {selectedAlert.coordinates[1]?.toFixed(6)}
+                        </span>
                       </div>
                     </div>
                   </div>

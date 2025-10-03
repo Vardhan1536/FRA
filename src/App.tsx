@@ -7,11 +7,13 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './pages/grama-sabha/Dashboard';
 import MapView from './pages/grama-sabha/MapView';
 import Claims from './pages/grama-sabha/Claims';
+import Schemes from './pages/grama-sabha/Schemes';
 import Alerts from './pages/grama-sabha/Alerts';
 import Settings from './pages/grama-sabha/Settings';
 // SDLC pages
 import SDLCDashboard from './pages/sdlc/Dashboard';
 import SDLCClaims from './pages/sdlc/Claims';
+import SDLCSchemes from './pages/sdlc/Schemes';
 import SDLCAlerts from './pages/sdlc/Alerts';
 import SDLCSettings from './pages/sdlc/Settings';
 // DLC pages
@@ -72,6 +74,7 @@ const AppContent: React.FC = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="map" element={<MapView />} />
           <Route path="claims" element={<Claims />} />
+          <Route path="schemes" element={<Schemes />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="settings" element={<Settings />} />
         </Route>
@@ -88,6 +91,7 @@ const AppContent: React.FC = () => {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<SDLCDashboard />} />
           <Route path="claims" element={<SDLCClaims />} />
+          <Route path="schemes" element={<SDLCSchemes />} />
           <Route path="alerts" element={<SDLCAlerts />} />
           <Route path="settings" element={<SDLCSettings />} />
         </Route>

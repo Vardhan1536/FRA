@@ -96,4 +96,3 @@ if __name__ == "__main__":
     result = agent.detect_conflicts(beneficiary_id, title_id, polygon_coordinates)
     print(result)
 
-

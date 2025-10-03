@@ -80,3 +80,4 @@ Ensure suggestions are relevant to the data (e.g., low water index -> borewells 
                     time.sleep(2)
                     continue
                 return {"error": f"Failed to generate suggestions: {str(e)}"}
+

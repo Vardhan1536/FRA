@@ -4,63 +4,50 @@ import { motion } from 'framer-motion';
 import {
   Building,
   Users,
-  Calendar,
-  DollarSign,
-  Download,
-  Search,
-  Filter,
-  Eye,
   CheckCircle,
   XCircle,
   Clock,
   TrendingUp,
-  MapPin,
+  Search,
+  Filter,
+  Download,
+  RefreshCw,
+  AlertTriangle,
   FileText,
-  X
+  X,
+  Eye,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
-import { dlcAPI } from '../../utils/api';
-import { Scheme } from '../../types';
+import { schemeEligibilityAPI } from '../../utils/api';
+import { BeneficiarySchemeEligibility, SchemeEligibilityGroup } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
-interface SchemeCardProps {
-  scheme: Scheme;
-  onViewDetails: (scheme: Scheme) => void;
+interface SchemeEligibilityCardProps {
+  schemeGroup: SchemeEligibilityGroup;
+  onViewDetails: (schemeGroup: SchemeEligibilityGroup) => void;
 }
 
-const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, onViewDetails }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-      case 'Inactive':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
-      case 'Completed':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
-      default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-    }
+const SchemeEligibilityCard: React.FC<SchemeEligibilityCardProps> = ({ schemeGroup, onViewDetails }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const totalBeneficiaries = schemeGroup.eligible_beneficiaries.length + schemeGroup.ineligible_beneficiaries.length;
+  const eligibilityRate = totalBeneficiaries > 0 ? (schemeGroup.eligible_beneficiaries.length / totalBeneficiaries) * 100 : 0;
+
+  const getEligibilityColor = (rate: number) => {
+    if (rate >= 80) return 'text-green-600';
+    if (rate >= 60) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'Inactive':
-        return <XCircle className="w-4 h-4" />;
-      case 'Completed':
-        return <CheckCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    return type === 'New' 
-      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300'
-      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+  const getEligibilityBgColor = (rate: number) => {
+    if (rate >= 80) return 'bg-green-100 dark:bg-green-900/20';
+    if (rate >= 60) return 'bg-yellow-100 dark:bg-yellow-900/20';
+    return 'bg-red-100 dark:bg-red-900/20';
   };
 
   return (
@@ -70,124 +57,158 @@ const SchemeCard: React.FC<SchemeCardProps> = ({ scheme, onViewDetails }) => {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {scheme.name}
-            </h3>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center ${getStatusColor(scheme.status)}`}>
-              {getStatusIcon(scheme.status)}
-              <span className="ml-1">{scheme.status}</span>
-            </span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(scheme.type)}`}>
-              {scheme.type}
-            </span>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            {schemeGroup.scheme_name}
+          </h3>
+          <div className="flex items-center space-x-4 mb-3">
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${getEligibilityBgColor(eligibilityRate)} ${getEligibilityColor(eligibilityRate)}`}>
+              {eligibilityRate.toFixed(1)}% Eligible
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {totalBeneficiaries} Total Beneficiaries
+            </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            {scheme.description}
-          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onViewDetails(schemeGroup)}
+            className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+          >
+            <Eye className="w-4 h-4" />
+            <span>View Details</span>
+          </motion.button>
         </div>
       </div>
 
+      {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-          <Users className="w-4 h-4" />
-          <span>{scheme.historicalBeneficiaries} beneficiaries</span>
+        <div className="flex items-center space-x-2 text-sm">
+          <CheckCircle className="w-4 h-4 text-green-500" />
+          <span className="text-gray-600 dark:text-gray-400">Eligible:</span>
+          <span className="font-semibold text-green-600">{schemeGroup.eligible_beneficiaries.length}</span>
         </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-          <DollarSign className="w-4 h-4" />
-          <span>₹{scheme.budget.toLocaleString()}</span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-          <Calendar className="w-4 h-4" />
-          <span>{scheme.startDate.toLocaleDateString()}</span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-          <MapPin className="w-4 h-4" />
-          <span>{scheme.allocatedRegions.length} regions</span>
+        <div className="flex items-center space-x-2 text-sm">
+          <XCircle className="w-4 h-4 text-red-500" />
+          <span className="text-gray-600 dark:text-gray-400">Ineligible:</span>
+          <span className="font-semibold text-red-600">{schemeGroup.ineligible_beneficiaries.length}</span>
         </div>
       </div>
 
-      {/* Eligibility Criteria */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Eligibility Criteria:</h4>
-        <div className="flex flex-wrap gap-1">
-          {scheme.eligibilityCriteria.slice(0, 3).map((criteria, index) => (
-            <span key={index} className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded text-xs">
-              {criteria}
-            </span>
-          ))}
-          {scheme.eligibilityCriteria.length > 3 && (
-            <span className="px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
-              +{scheme.eligibilityCriteria.length - 3} more
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Non-Eligibility Criteria */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Non-Eligibility:</h4>
-        <div className="flex flex-wrap gap-1">
-          {scheme.nonEligibilityCriteria.slice(0, 2).map((criteria, index) => (
-            <span key={index} className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded text-xs">
-              {criteria}
-            </span>
-          ))}
-          {scheme.nonEligibilityCriteria.length > 2 && (
-            <span className="px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
-              +{scheme.nonEligibilityCriteria.length - 2} more
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          <span>Allocated Regions: {scheme.allocatedRegions.join(', ')}</span>
-        </div>
-        
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onViewDetails(scheme)}
-          className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+      {/* Expanded Details */}
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="space-y-4"
         >
-          <Eye className="w-4 h-4" />
-          <span>View Details</span>
-        </motion.button>
-      </div>
+          {/* Eligible Beneficiaries */}
+          {schemeGroup.eligible_beneficiaries.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-green-600 dark:text-green-400 mb-2">
+                Eligible Beneficiaries ({schemeGroup.eligible_beneficiaries.length})
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {schemeGroup.eligible_beneficiaries.slice(0, 10).map((beneficiaryId, index) => (
+                  <span key={index} className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded text-xs">
+                    {beneficiaryId}
+                  </span>
+                ))}
+                {schemeGroup.eligible_beneficiaries.length > 10 && (
+                  <span className="px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs">
+                    +{schemeGroup.eligible_beneficiaries.length - 10} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Ineligible Beneficiaries with Reasons */}
+          {schemeGroup.ineligible_beneficiaries.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                Ineligible Beneficiaries ({schemeGroup.ineligible_beneficiaries.length})
+              </h4>
+              <div className="space-y-2">
+                {schemeGroup.ineligible_beneficiaries.slice(0, 5).map((beneficiary, index) => (
+                  <div key={index} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <div className="font-medium text-red-800 dark:text-red-200 text-sm mb-1">
+                      {beneficiary.beneficiary_id}
+                    </div>
+                    <div className="text-xs text-red-600 dark:text-red-300">
+                      <strong>Reasons:</strong>
+                      <ul className="mt-1 list-disc list-inside space-y-1">
+                        {beneficiary.reasons.map((reason, reasonIndex) => (
+                          <li key={reasonIndex}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+                {schemeGroup.ineligible_beneficiaries.length > 5 && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+                    +{schemeGroup.ineligible_beneficiaries.length - 5} more ineligible beneficiaries
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
     </motion.div>
   );
 };
 
 const Schemes: React.FC = () => {
   const { t } = useTranslation();
-  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const { currentUser } = useAuth();
+  const [schemeData, setSchemeData] = useState<BeneficiarySchemeEligibility[]>([]);
+  const [groupedSchemes, setGroupedSchemes] = useState<SchemeEligibilityGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
+  const [eligibilityFilter, setEligibilityFilter] = useState('all');
+  const [selectedScheme, setSelectedScheme] = useState<SchemeEligibilityGroup | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    loadSchemes();
+    loadSchemeEligibility();
   }, []);
 
-  const loadSchemes = async () => {
+  const loadSchemeEligibility = async (forceRefresh: boolean = false) => {
+    if (!currentUser?.role) return;
+    
     setLoading(true);
     try {
-      const schemesData = await dlcAPI.getSchemes();
-      setSchemes(schemesData);
+      const data = await schemeEligibilityAPI.getSchemeEligibility(currentUser.role, forceRefresh);
+      setSchemeData(data);
+      
+      // Group data by scheme name
+      const grouped = schemeEligibilityAPI.groupByScheme(data);
+      setGroupedSchemes(grouped);
+      
+      // Calculate statistics
+      const eligibilityStats = schemeEligibilityAPI.getEligibilityStats(data);
+      setStats(eligibilityStats);
     } catch (error) {
-      console.error('Failed to load schemes:', error);
+      console.error('Failed to load scheme eligibility:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetails = (scheme: Scheme) => {
-    setSelectedScheme(scheme);
+  const handleViewDetails = (schemeGroup: SchemeEligibilityGroup) => {
+    setSelectedScheme(schemeGroup);
     setShowDetailsModal(true);
   };
 
@@ -198,11 +219,21 @@ const Schemes: React.FC = () => {
 
   const handleExportCSV = async () => {
     try {
-      const blob = await dlcAPI.exportSchemesToCSV(schemes);
+      // Create CSV content
+      const csvContent = [
+        'Scheme Name,Beneficiary ID,Eligibility,Reasons',
+        ...schemeData.flatMap(beneficiary => 
+          beneficiary.schemes_eligibility.map(scheme => 
+            `${scheme.scheme_name},${scheme.beneficiary_id},${scheme.eligibility ? 'Eligible' : 'Ineligible'},"${scheme.reasons.join('; ')}"`
+          )
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'dlc-schemes.csv';
+      a.download = 'scheme-eligibility.csv';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -212,29 +243,44 @@ const Schemes: React.FC = () => {
     }
   };
 
-  const filteredSchemes = schemes.filter(scheme => {
-    const matchesSearch = scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         scheme.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || scheme.status.toLowerCase() === statusFilter;
-    const matchesType = typeFilter === 'all' || scheme.type.toLowerCase() === typeFilter;
+  const filteredSchemes = groupedSchemes.filter(scheme => {
+    const matchesSearch = scheme.scheme_name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesSearch && matchesStatus && matchesType;
+    let matchesEligibility = true;
+    if (eligibilityFilter === 'high') {
+      const total = scheme.eligible_beneficiaries.length + scheme.ineligible_beneficiaries.length;
+      const rate = total > 0 ? (scheme.eligible_beneficiaries.length / total) * 100 : 0;
+      matchesEligibility = rate >= 80;
+    } else if (eligibilityFilter === 'medium') {
+      const total = scheme.eligible_beneficiaries.length + scheme.ineligible_beneficiaries.length;
+      const rate = total > 0 ? (scheme.eligible_beneficiaries.length / total) * 100 : 0;
+      matchesEligibility = rate >= 60 && rate < 80;
+    } else if (eligibilityFilter === 'low') {
+      const total = scheme.eligible_beneficiaries.length + scheme.ineligible_beneficiaries.length;
+      const rate = total > 0 ? (scheme.eligible_beneficiaries.length / total) * 100 : 0;
+      matchesEligibility = rate < 60;
+    }
+    
+    return matchesSearch && matchesEligibility;
   });
 
-  // Calculate statistics
-  const totalSchemes = schemes.length;
-  const activeSchemes = schemes.filter(s => s.status === 'Active').length;
-  const totalBeneficiaries = schemes.reduce((sum, s) => sum + s.historicalBeneficiaries, 0);
-  const totalBudget = schemes.reduce((sum, s) => sum + s.budget, 0);
-
+  // Chart data
   const barChartData = {
-    labels: schemes.map(s => s.name),
+    labels: groupedSchemes.map(s => s.scheme_name.length > 30 ? s.scheme_name.substring(0, 30) + '...' : s.scheme_name),
     datasets: [
       {
-        label: 'Beneficiaries',
-        data: schemes.map(s => s.historicalBeneficiaries),
+        label: 'Eligible',
+        data: groupedSchemes.map(s => s.eligible_beneficiaries.length),
         backgroundColor: 'rgba(34, 197, 94, 0.8)',
         borderColor: 'rgba(34, 197, 94, 1)',
+        borderWidth: 2,
+        borderRadius: 8
+      },
+      {
+        label: 'Ineligible',
+        data: groupedSchemes.map(s => s.ineligible_beneficiaries.length),
+        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        borderColor: 'rgba(239, 68, 68, 1)',
         borderWidth: 2,
         borderRadius: 8
       }
@@ -242,23 +288,20 @@ const Schemes: React.FC = () => {
   };
 
   const pieChartData = {
-    labels: ['Active', 'Inactive', 'Completed'],
+    labels: ['Eligible', 'Ineligible'],
     datasets: [
       {
         data: [
-          schemes.filter(s => s.status === 'Active').length,
-          schemes.filter(s => s.status === 'Inactive').length,
-          schemes.filter(s => s.status === 'Completed').length
+          groupedSchemes.reduce((sum, s) => sum + s.eligible_beneficiaries.length, 0),
+          groupedSchemes.reduce((sum, s) => sum + s.ineligible_beneficiaries.length, 0)
         ],
         backgroundColor: [
           'rgba(34, 197, 94, 0.8)',
-          'rgba(107, 114, 128, 0.8)',
-          'rgba(59, 130, 246, 0.8)'
+          'rgba(239, 68, 68, 0.8)'
         ],
         borderColor: [
           'rgba(34, 197, 94, 1)',
-          'rgba(107, 114, 128, 1)',
-          'rgba(59, 130, 246, 1)'
+          'rgba(239, 68, 68, 1)'
         ],
         borderWidth: 2
       }
@@ -285,6 +328,17 @@ const Schemes: React.FC = () => {
     }
   };
 
+  if (!currentUser?.role) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Please log in to view scheme eligibility data.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -294,131 +348,131 @@ const Schemes: React.FC = () => {
         className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-2xl p-8 text-white relative overflow-hidden"
       >
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2">Scheme Management</h1>
+          <h1 className="text-3xl font-bold mb-2">Scheme Eligibility Analysis</h1>
           <p className="text-emerald-100 text-lg">
-            Manage FRA schemes, eligibility criteria, and beneficiary tracking
+            Track beneficiary eligibility across all FRA schemes and government programs
           </p>
         </div>
         <div className="absolute top-0 right-0 opacity-10">
-          <img 
-            src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80"
-            alt="Forest background"
-            className="w-96 h-96 object-cover"
-          />
+          <Building className="w-96 h-96" />
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Total Schemes
-              </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {totalSchemes}
-              </p>
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Total Schemes
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {stats.totalSchemes}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <Building className="w-8 h-8 text-blue-600" />
+              </div>
             </div>
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-              <Building className="w-8 h-8 text-blue-600" />
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Active Schemes
-              </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {activeSchemes}
-              </p>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Total Beneficiaries
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {stats.totalBeneficiaries}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                <Users className="w-8 h-8 text-purple-600" />
+              </div>
             </div>
-            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Total Beneficiaries
-              </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {totalBeneficiaries.toLocaleString()}
-              </p>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Overall Eligibility Rate
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {stats.overallEligibilityRate.toFixed(1)}%
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                <TrendingUp className="w-8 h-8 text-emerald-600" />
+              </div>
             </div>
-            <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-              <Users className="w-8 h-8 text-purple-600" />
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Total Budget
-              </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                ₹{(totalBudget / 1000000).toFixed(1)}M
-              </p>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Cache Status
+                </p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                  {schemeEligibilityAPI.getCacheInfo(currentUser.role).exists ? 'Cached' : 'Fresh'}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                <Clock className="w-8 h-8 text-amber-600" />
+              </div>
             </div>
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-              <DollarSign className="w-8 h-8 text-amber-600" />
-            </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Bar Chart */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Beneficiaries by Scheme
-          </h3>
-          <Bar data={barChartData} options={chartOptions} />
-        </motion.div>
+      {groupedSchemes.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Bar Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Eligibility by Scheme
+            </h3>
+            <Bar data={barChartData} options={chartOptions} />
+          </motion.div>
 
-        {/* Pie Chart */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Scheme Status Distribution
-          </h3>
-          <div className="flex justify-center">
-            <div className="w-80 h-80">
-              <Pie data={pieChartData} options={{ responsive: true, maintainAspectRatio: true }} />
+          {/* Pie Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Overall Eligibility Distribution
+            </h3>
+            <div className="flex justify-center">
+              <div className="w-80 h-80">
+                <Pie data={pieChartData} options={{ responsive: true, maintainAspectRatio: true }} />
+              </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Schemes List */}
       <motion.div
@@ -429,7 +483,7 @@ const Schemes: React.FC = () => {
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            FRA Schemes
+            Scheme Eligibility Details
           </h3>
           <div className="flex items-center space-x-3">
             <div className="relative">
@@ -443,29 +497,30 @@ const Schemes: React.FC = () => {
               />
             </div>
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              value={eligibilityFilter}
+              onChange={(e) => setEligibilityFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             >
-              <option value="all">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="completed">Completed</option>
-            </select>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            >
-              <option value="all">All Types</option>
-              <option value="new">New</option>
-              <option value="old">Old</option>
+              <option value="all">All Eligibility Rates</option>
+              <option value="high">High (≥80%)</option>
+              <option value="medium">Medium (60-79%)</option>
+              <option value="low">Low (&lt;60%)</option>
             </select>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => loadSchemeEligibility(true)}
+              disabled={loading}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleExportCSV}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
               <Download className="w-4 h-4" />
               <span>Export CSV</span>
@@ -477,12 +532,25 @@ const Schemes: React.FC = () => {
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
           </div>
+        ) : filteredSchemes.length === 0 ? (
+          <div className="text-center py-12">
+            <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No schemes found
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {searchTerm || eligibilityFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'No scheme eligibility data available'
+              }
+            </p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredSchemes.map((scheme) => (
-              <SchemeCard
-                key={scheme.id}
-                scheme={scheme}
+          <div className="space-y-6">
+            {filteredSchemes.map((schemeGroup) => (
+              <SchemeEligibilityCard
+                key={schemeGroup.scheme_name}
+                schemeGroup={schemeGroup}
                 onViewDetails={handleViewDetails}
               />
             ))}
@@ -501,13 +569,13 @@ const Schemes: React.FC = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedScheme.name}
+                  {selectedScheme.scheme_name}
                 </h2>
                 <button
                   onClick={handleCloseModal}
@@ -518,99 +586,46 @@ const Schemes: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Basic Information */}
+                {/* Eligible Beneficiaries */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Basic Information
+                  <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-4 flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Eligible Beneficiaries ({selectedScheme.eligible_beneficiaries.length})
                   </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Description</label>
-                      <p className="text-gray-900 dark:text-white">{selectedScheme.description}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
-                        <p className="text-gray-900 dark:text-white">{selectedScheme.status}</p>
+                  <div className="max-h-96 overflow-y-auto space-y-2">
+                    {selectedScheme.eligible_beneficiaries.map((beneficiaryId, index) => (
+                      <div key={index} className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <span className="font-medium text-green-800 dark:text-green-200">
+                          {beneficiaryId}
+                        </span>
                       </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Type</label>
-                        <p className="text-gray-900 dark:text-white">{selectedScheme.type}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Start Date</label>
-                        <p className="text-gray-900 dark:text-white">{selectedScheme.startDate.toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">End Date</label>
-                        <p className="text-gray-900 dark:text-white">
-                          {selectedScheme.endDate ? selectedScheme.endDate.toLocaleDateString() : 'Ongoing'}
-                        </p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Financial Information */}
+                {/* Ineligible Beneficiaries */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Financial Information
+                  <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center">
+                    <XCircle className="w-5 h-5 mr-2" />
+                    Ineligible Beneficiaries ({selectedScheme.ineligible_beneficiaries.length})
                   </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Budget</label>
-                      <p className="text-2xl font-bold text-emerald-600">₹{selectedScheme.budget.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Historical Beneficiaries</label>
-                      <p className="text-2xl font-bold text-blue-600">{selectedScheme.historicalBeneficiaries}</p>
-                    </div>
+                  <div className="max-h-96 overflow-y-auto space-y-3">
+                    {selectedScheme.ineligible_beneficiaries.map((beneficiary, index) => (
+                      <div key={index} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <div className="font-medium text-red-800 dark:text-red-200 mb-2">
+                          {beneficiary.beneficiary_id}
+                        </div>
+                        <div className="text-sm text-red-600 dark:text-red-300">
+                          <strong>Reasons for Ineligibility:</strong>
+                          <ul className="mt-1 list-disc list-inside space-y-1">
+                            {beneficiary.reasons.map((reason, reasonIndex) => (
+                              <li key={reasonIndex}>{reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
-
-              {/* Eligibility Criteria */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Eligibility Criteria
-                </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-md font-medium text-green-600 dark:text-green-400 mb-3">Eligible</h4>
-                    <ul className="space-y-2">
-                      {selectedScheme.eligibilityCriteria.map((criteria, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{criteria}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-md font-medium text-red-600 dark:text-red-400 mb-3">Not Eligible</h4>
-                    <ul className="space-y-2">
-                      {selectedScheme.nonEligibilityCriteria.map((criteria, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{criteria}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Allocated Regions */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Allocated Regions
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedScheme.allocatedRegions.map((region, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-full text-sm">
-                      {region}
-                    </span>
-                  ))}
                 </div>
               </div>
             </div>

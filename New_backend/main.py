@@ -7,30 +7,21 @@ from an_exp import initialize_demo_data,GLOBAL_APPLICATIONS,GLOBAL_VILLAGES
 import google.generativeai as genai
 from eligibility_check_agent import EligibilityAgent
 from dataloader import load_data
-from scheme_eligibility import SchemeEligibilityAgent  # Add this import
+from scheme_eligibility import SchemeEligibilityAgent 
 
 app = FastAPI()
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174"],  # Allow your frontend origin
+    allow_origins=["*"],  # Allow your frontend origin
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
 
 
-# @app.on_event("startup")
-# def startup():
-#     initialize_demo_data()
-#     genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyDVIEQJ3rbll37mQV4N0wRpbufqRBQLN4I"))
-#     model = genai.GenerativeModel('gemini-2.5-flash')
-#     agent = EligibilityAgent(model)
-    
-#     for app in GLOBAL_APPLICATIONS:
-#         agent.check_eligibility(app)
-
+GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 
 @app.on_event("startup")
 def startup():
@@ -56,16 +47,53 @@ def startup():
     for app in GLOBAL_APPLICATIONS:
         beneficiary_id = app["beneficiary_id"]
         app["schemes_eligibility"] = grouped_schemes.get(beneficiary_id, [])
+    
+    # Add monitoring precomputation
+    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCAWPWdlnOYK-qONocy8MnO-WqGaE2r6eQ")
+    roles = ["DLC", "SDLC", "GramaSabha"]
+    global GLOBAL_MONITORING_RESULTS
+    GLOBAL_MONITORING_RESULTS = {}
+    for role in roles:
+        try:
+            result_str = monitoring_agent(api_key, role)
+            GLOBAL_MONITORING_RESULTS[role] = json.loads(result_str)
+        except Exception as e:
+            print(f"Error precomputing monitoring for {role}: {str(e)}")
 
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
-    try:
-        # Use a hardcoded API key or load from environment variable
-        api_key = os.getenv("GEMINI_API_KEY", "AIzaSyDVIEQJ3rbll37mQV4N0wRpbufqRBQLN4I")  # Replace with actual key or use env variable
-        result = monitoring_agent(api_key, role)
-        return json.loads(result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+    if not role:
+        raise HTTPException(status_code=400, detail="Role is required")
+    result = GLOBAL_MONITORING_RESULTS.get(role)
+    if not result:
+        raise HTTPException(status_code=404, detail="No precomputed monitoring results for this role")
+    return result
+
+@app.get("/get-scheme-eligibility")
+async def get_scheme_eligibility(role: str = None):
+    if not role:
+        raise HTTPException(status_code=400, detail="Role is required")
+    
+    if role == "DLC":
+        filtered_records = GLOBAL_APPLICATIONS
+    elif role == "SDLC":
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000001"]
+    elif role == "GramaSabha":
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000001"]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid role. Supported roles: DLC, SDLC, GramaSabha")
+    
+    # Extract only the schemes_eligibility for each filtered beneficiary
+    results = []
+    for app in filtered_records:
+        beneficiary_id = app.get("beneficiary_id")
+        schemes = app.get("schemes_eligibility", [])
+        results.append({
+            "beneficiary_id": beneficiary_id,
+            "schemes_eligibility": schemes
+        })
+    
+    return results
 
 @app.get("/get-beneficiaries")
 async def get_beneficiaries(role: str = None):
@@ -138,31 +166,3 @@ async def suggest_resources(role: str = None):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-    
-    
-# from scheme_eligibility_agent import SchemeEligibilityAgent  # Add this import
-
-# @app.on_event("startup")
-# def startup():
-#     initialize_demo_data()
-#     genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyDVIEQJ3rbll37mQV4N0wRpbufqRBQLN4I"))
-#     model = genai.GenerativeModel('gemini-2.5-flash')
-#     agent = EligibilityAgent(model)
-    
-#     for app in GLOBAL_APPLICATIONS:
-#         agent.check_eligibility(app)
-    
-#     # Add SchemeEligibilityAgent processing
-#     scheme_agent = SchemeEligibilityAgent(model)
-#     data = {"beneficiaries": GLOBAL_APPLICATIONS}
-#     scheme_results = scheme_agent.check_eligibility(data)
-    
-#     # Group results by beneficiary_id and update GLOBAL_APPLICATIONS
-#     from collections import defaultdict
-#     grouped_schemes = defaultdict(list)
-#     for result in scheme_results:
-#         grouped_schemes[result["beneficiary_id"]].append(result)
-    
-#     for app in GLOBAL_APPLICATIONS:
-#         beneficiary_id = app["beneficiary_id"]
-#         app["schemes_eligibility"] = grouped_schemes.get(beneficiary_id, [])

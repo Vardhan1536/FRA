@@ -1,0 +1,115 @@
+{
+  "models": {
+    "PM-KISAN": {
+      "accuracy": 1.0,
+      "cv_mean": 1.0,
+      "features": [
+        "age",
+        "family_size",
+        "annual_income",
+        "population",
+        "tribal_population",
+        "forest_area_hectares",
+        "total_titles",
+        "total_area",
+        "approved_titles",
+        "total_assets",
+        "total_asset_area",
+        "total_eligible",
+        "total_covered",
+        "Forest_percent",
+        "Water_percent",
+        "Built_up_percent",
+        "assets_agricultural_plot",
+        "assets_forest_patch",
+        "assets_grazing_land",
+        "assets_homestead",
+        "assets_sacred_grove",
+        "assets_water_body",
+        "education_encoded",
+        "occupation_encoded",
+        "community_encoded"
+      ]
+    },
+    "PM_Awas_Yojana": {
+      "accuracy": 0.8324468085106383,
+      "cv_mean": 0.8315303790996172,
+      "features": [
+        "age",
+        "family_size",
+        "annual_income",
+        "population",
+        "tribal_population",
+        "forest_area_hectares",
+        "total_titles",
+        "total_area",
+        "approved_titles",
+        "total_assets",
+        "total_asset_area",
+        "total_eligible",
+        "total_covered",
+        "Forest_percent",
+        "Water_percent",
+        "Built_up_percent",
+        "assets_agricultural_plot",
+        "assets_forest_patch",
+        "assets_grazing_land",
+        "assets_homestead",
+        "assets_sacred_grove",
+        "assets_water_body",
+        "education_encoded",
+        "occupation_encoded",
+        "community_encoded"
+      ]
+    }
+  },
+  "encoders": {
+    "education_levels": [
+      "Graduate",
+      "Illiterate",
+      "Middle",
+      "Primary",
+      "Secondary"
+    ],
+    "occupations": [
+      "Agriculture",
+      "Animal_Husbandry",
+      "Daily_Labor",
+      "Forest_Produce"
+    ],
+    "communities": [
+      "Baiga",
+      "Bharia",
+      "Bhil",
+      "Gond",
+      "Kol"
+    ]
+  },
+  "feature_columns": [
+    "age",
+    "family_size",
+    "annual_income",
+    "population",
+    "tribal_population",
+    "forest_area_hectares",
+    "total_titles",
+    "total_area",
+    "approved_titles",
+    "total_assets",
+    "total_asset_area",
+    "total_eligible",
+    "total_covered",
+    "Forest_percent",
+    "Water_percent",
+    "Built_up_percent",
+    "assets_agricultural_plot",
+    "assets_forest_patch",
+    "assets_grazing_land",
+    "assets_homestead",
+    "assets_sacred_grove",
+    "assets_water_body",
+    "education_encoded",
+    "occupation_encoded",
+    "community_encoded"
+  ]
+}

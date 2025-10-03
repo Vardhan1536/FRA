@@ -1,0 +1,25 @@
+{
+  "dataset_info": {
+    "name": "FRA Asset Mapping Mock Dataset - Mandla",
+    "version": "4.0 - District Focus with Land Cover",
+    "created_date": "2025-09-27 22:09:07",
+    "description": "Mock dataset for FRA asset mapping in Mandla, Madhya Pradesh with GP boundaries and land cover stats"
+  },
+  "files_generated": [
+    "mock_administrative_hierarchy_mandla.csv",
+    "mock_fra_beneficiaries_mandla.csv",
+    "mock_fra_titles_mandla.csv",
+    "mock_detailed_asset_inventory_mandla.csv",
+    "mock_css_scheme_coverage_mandla.csv",
+    "mock_temporal_change_detection_mandla.csv",
+    "mock_vulnerability_assessment_mandla.csv",
+    "mock_scheme_impact_predictions_mandla.csv",
+    "mock_district_summary_mandla.csv",
+    "mock_ml_training_dataset_mandla.csv",
+    "mock_fra_ifr_boundaries_mandla.geojson",
+    "mock_fra_cr_boundaries_mandla.geojson",
+    "mock_fra_cfr_boundaries_mandla.geojson",
+    "landcover_stats_mandla_gps.csv",
+    "fra_map_mandla.html"
+  ]
+}

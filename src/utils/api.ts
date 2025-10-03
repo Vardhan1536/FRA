@@ -817,8 +817,8 @@ export const dlcAPI = {
 };
 
 export const alertsAPI = {
-  getAll: async (forceRefresh: boolean = false): Promise<Alert[]> => {
-    const cacheKey = 'alerts_cache';
+  getAll: async (role: string, forceRefresh: boolean = false): Promise<Alert[]> => {
+    const cacheKey = `alerts_cache_${role}`;
     const maxCacheAge = 5 * 60 * 1000; // 5 minutes cache
     
     // Check cache first unless force refresh is requested
@@ -830,7 +830,7 @@ export const alertsAPI = {
           const cacheAge = Date.now() - parsed.timestamp;
           
           if (cacheAge < maxCacheAge) {
-            console.log(`Loading ${parsed.data.length} alerts from cache (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+            console.log(`Loading ${parsed.data.length} alerts from cache for role: ${role} (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
             return parsed.data;
           } else {
             console.log('Alerts cache expired, fetching fresh data');
@@ -844,9 +844,12 @@ export const alertsAPI = {
     }
 
     try {
-      console.log('Fetching alerts from monitoring API');
+      console.log(`Fetching alerts from monitoring API for role: ${role}`);
       
       const response = await axios.get('http://127.0.0.1:8000/monitor-changes', {
+        params: {
+          role: role
+        },
         timeout: 30000, // 30 second timeout
       });
 
@@ -872,10 +875,11 @@ export const alertsAPI = {
       // Cache the results
       const cacheData = {
         data: alerts,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        role: role
       };
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-      console.log(`Cached ${alerts.length} alerts for ${maxCacheAge / 1000 / 60} minutes`);
+      console.log(`Cached ${alerts.length} alerts for role: ${role} for ${maxCacheAge / 1000 / 60} minutes`);
       
       return alerts;
     } catch (error) {
@@ -913,9 +917,9 @@ export const alertsAPI = {
     }
   },
 
-  getAlerts: async (): Promise<Alert[]> => {
+  getAlerts: async (role: string): Promise<Alert[]> => {
     // Alias for getAll for backward compatibility
-    return alertsAPI.getAll();
+    return alertsAPI.getAll(role);
   },
 
   acknowledge: async (alertId: string, comments?: string): Promise<void> => {
@@ -934,34 +938,39 @@ export const alertsAPI = {
 
       console.log('Alert acknowledgment response:', response.data);
       
-      // Update local cache
-      const cacheKey = 'alerts_cache';
-      try {
-        const cachedData = localStorage.getItem(cacheKey);
-        if (cachedData) {
-          const parsed = JSON.parse(cachedData);
-          const updatedAlerts = parsed.data.map((alert: Alert) => 
-            alert.id === alertId 
-              ? { 
-                  ...alert, 
-                  resolved: true,
-                  acknowledgedBy: 'Current User',
-                  acknowledgedAt: new Date(),
-                  comments: comments
-                }
-              : alert
-          );
-          
-          const updatedCacheData = {
-            data: updatedAlerts,
-            timestamp: parsed.timestamp // Keep original timestamp
-          };
-          localStorage.setItem(cacheKey, JSON.stringify(updatedCacheData));
-          console.log('Updated alerts cache after acknowledgment');
+      // Update local cache for all roles (since we don't know which role's cache to update)
+      const keys = Object.keys(localStorage);
+      const alertCacheKeys = keys.filter(key => key.startsWith('alerts_cache_'));
+      
+      alertCacheKeys.forEach(cacheKey => {
+        try {
+          const cachedData = localStorage.getItem(cacheKey);
+          if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            const updatedAlerts = parsed.data.map((alert: Alert) => 
+              alert.id === alertId 
+                ? { 
+                    ...alert, 
+                    resolved: true,
+                    acknowledgedBy: 'Current User',
+                    acknowledgedAt: new Date(),
+                    comments: comments
+                  }
+                : alert
+            );
+            
+            const updatedCacheData = {
+              data: updatedAlerts,
+              timestamp: parsed.timestamp, // Keep original timestamp
+              role: parsed.role
+            };
+            localStorage.setItem(cacheKey, JSON.stringify(updatedCacheData));
+            console.log(`Updated alerts cache ${cacheKey} after acknowledgment`);
+          }
+        } catch (cacheError) {
+          console.error(`Error updating alerts cache ${cacheKey} after acknowledgment:`, cacheError);
         }
-      } catch (cacheError) {
-        console.error('Error updating alerts cache after acknowledgment:', cacheError);
-      }
+      });
     } catch (error) {
       console.error('Error acknowledging alert:', error);
       
@@ -1003,10 +1012,15 @@ export const alertsAPI = {
 
       console.log('Change detection refresh response:', response.data);
       
-      // Clear alerts cache to force fresh data on next load
-      const cacheKey = 'alerts_cache';
-      localStorage.removeItem(cacheKey);
-      console.log('Cleared alerts cache after change detection refresh');
+      // Clear all alerts caches to force fresh data on next load
+      const keys = Object.keys(localStorage);
+      const alertCacheKeys = keys.filter(key => key.startsWith('alerts_cache_'));
+      
+      alertCacheKeys.forEach(cacheKey => {
+        localStorage.removeItem(cacheKey);
+      });
+      
+      console.log(`Cleared ${alertCacheKeys.length} alerts caches after change detection refresh`);
     } catch (error) {
       console.error('Error refreshing change detection:', error);
       
@@ -1031,29 +1045,72 @@ export const alertsAPI = {
   },
 
   // Cache management utilities
-  clearCache: (): void => {
-    const cacheKey = 'alerts_cache';
-    localStorage.removeItem(cacheKey);
-    console.log('Cleared alerts cache');
+  clearCache: (role?: string): void => {
+    if (role) {
+      const cacheKey = `alerts_cache_${role}`;
+      localStorage.removeItem(cacheKey);
+      console.log(`Cleared alerts cache for role: ${role}`);
+    } else {
+      const keys = Object.keys(localStorage);
+      const alertCacheKeys = keys.filter(key => key.startsWith('alerts_cache_'));
+      
+      alertCacheKeys.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      console.log(`Cleared ${alertCacheKeys.length} alerts caches`);
+    }
   },
 
-  getCacheInfo: (): { exists: boolean; age: number; dataCount: number } => {
-    const cacheKey = 'alerts_cache';
-    try {
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        const age = Date.now() - parsed.timestamp;
-        return {
-          exists: true,
-          age: age,
-          dataCount: parsed.data?.length || 0
-        };
+  getCacheInfo: (role?: string): { exists: boolean; age: number; dataCount: number } => {
+    if (role) {
+      const cacheKey = `alerts_cache_${role}`;
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const age = Date.now() - parsed.timestamp;
+          return {
+            exists: true,
+            age: age,
+            dataCount: parsed.data?.length || 0
+          };
+        }
+      } catch (error) {
+        console.error('Error reading cache info:', error);
       }
-    } catch (error) {
-      console.error('Error reading cache info:', error);
+      return { exists: false, age: 0, dataCount: 0 };
+    } else {
+      // Get info for all roles
+      const keys = Object.keys(localStorage);
+      const alertCacheKeys = keys.filter(key => key.startsWith('alerts_cache_'));
+      let totalDataCount = 0;
+      let hasAnyCache = false;
+      let oldestAge = 0;
+      
+      alertCacheKeys.forEach(key => {
+        try {
+          const cachedData = localStorage.getItem(key);
+          if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            const age = Date.now() - parsed.timestamp;
+            totalDataCount += parsed.data?.length || 0;
+            hasAnyCache = true;
+            if (age > oldestAge) {
+              oldestAge = age;
+            }
+          }
+        } catch (error) {
+          console.error('Error reading cache info:', error);
+        }
+      });
+      
+      return {
+        exists: hasAnyCache,
+        age: oldestAge,
+        dataCount: totalDataCount
+      };
     }
-    return { exists: false, age: 0, dataCount: 0 };
   }
 };
 
@@ -1181,9 +1238,10 @@ export const cacheManager = {
   clearAllCaches: (): void => {
     const keys = Object.keys(localStorage);
     const appKeys = keys.filter(key => 
-      key.startsWith('alerts_cache') ||
+      key.startsWith('alerts_cache_') ||
       key.startsWith('beneficiaries_') ||
       key.startsWith('legal_assistance_') ||
+      key.startsWith('scheme_eligibility_') ||
       key.startsWith('pendingClaims')
     );
     
@@ -1196,17 +1254,40 @@ export const cacheManager = {
 
   // Get cache statistics
   getCacheStats: (): {
-    alerts: { exists: boolean; age: number; dataCount: number };
+    alerts: { [role: string]: { exists: boolean; age: number; dataCount: number } };
     beneficiaries: { [role: string]: { exists: boolean; age: number; dataCount: number } };
     legalAssistance: { count: number; totalSize: number };
+    schemeEligibility: { [role: string]: { exists: boolean; age: number; dataCount: number } };
     totalSize: number;
   } => {
-    const alertsInfo = alertsAPI.getCacheInfo();
+    // Get alerts cache info for all roles
+    const alertsInfo: { [role: string]: { exists: boolean; age: number; dataCount: number } } = {};
+    const localStorageKeys = Object.keys(localStorage);
+    const alertCacheKeys = localStorageKeys.filter(key => key.startsWith('alerts_cache_'));
+    
+    alertCacheKeys.forEach(key => {
+      const role = key.replace('alerts_cache_', '');
+      try {
+        const cachedData = localStorage.getItem(key);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const age = Date.now() - parsed.timestamp;
+          alertsInfo[role] = {
+            exists: true,
+            age: age,
+            dataCount: parsed.data?.length || 0
+          };
+        } else {
+          alertsInfo[role] = { exists: false, age: 0, dataCount: 0 };
+        }
+      } catch (error) {
+        alertsInfo[role] = { exists: false, age: 0, dataCount: 0 };
+      }
+    });
     
     // Get beneficiaries cache info for all roles
     const beneficiariesInfo: { [role: string]: { exists: boolean; age: number; dataCount: number } } = {};
-    const keys = Object.keys(localStorage);
-    const beneficiaryKeys = keys.filter(key => key.startsWith('beneficiaries_'));
+    const beneficiaryKeys = localStorageKeys.filter(key => key.startsWith('beneficiaries_'));
     
     beneficiaryKeys.forEach(key => {
       const role = key.replace('beneficiaries_', '');
@@ -1230,9 +1311,33 @@ export const cacheManager = {
     
     const legalInfo = legalAssistanceAPI.getCacheInfo();
     
+    // Get scheme eligibility cache info for all roles
+    const schemeEligibilityInfo: { [role: string]: { exists: boolean; age: number; dataCount: number } } = {};
+    const schemeKeys = localStorageKeys.filter(key => key.startsWith('scheme_eligibility_'));
+    
+    schemeKeys.forEach(key => {
+      const role = key.replace('scheme_eligibility_', '');
+      try {
+        const cachedData = localStorage.getItem(key);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const age = Date.now() - parsed.timestamp;
+          schemeEligibilityInfo[role] = {
+            exists: true,
+            age: age,
+            dataCount: parsed.data?.length || 0
+          };
+        } else {
+          schemeEligibilityInfo[role] = { exists: false, age: 0, dataCount: 0 };
+        }
+      } catch (error) {
+        schemeEligibilityInfo[role] = { exists: false, age: 0, dataCount: 0 };
+      }
+    });
+    
     // Calculate total cache size
     let totalSize = 0;
-    keys.forEach(key => {
+    localStorageKeys.forEach(key => {
       const data = localStorage.getItem(key);
       if (data) {
         totalSize += data.length;
@@ -1243,6 +1348,7 @@ export const cacheManager = {
       alerts: alertsInfo,
       beneficiaries: beneficiariesInfo,
       legalAssistance: legalInfo,
+      schemeEligibility: schemeEligibilityInfo,
       totalSize: totalSize
     };
   },
@@ -1251,9 +1357,10 @@ export const cacheManager = {
   clearExpiredCaches: (): void => {
     const keys = Object.keys(localStorage);
     const appKeys = keys.filter(key => 
-      key.startsWith('alerts_cache') ||
+      key.startsWith('alerts_cache_') ||
       key.startsWith('beneficiaries_') ||
-      key.startsWith('legal_assistance_')
+      key.startsWith('legal_assistance_') ||
+      key.startsWith('scheme_eligibility_')
     );
     
     let clearedCount = 0;
@@ -1268,10 +1375,12 @@ export const cacheManager = {
           
           // Different expiration times for different cache types
           let maxAge = 30 * 60 * 1000; // 30 minutes default
-          if (key.startsWith('alerts_cache')) {
+          if (key.startsWith('alerts_cache_')) {
             maxAge = 5 * 60 * 1000; // 5 minutes for alerts
           } else if (key.startsWith('legal_assistance_')) {
             maxAge = 60 * 60 * 1000; // 1 hour for legal assistance
+          } else if (key.startsWith('scheme_eligibility_')) {
+            maxAge = 30 * 60 * 1000; // 30 minutes for scheme eligibility
           }
           
           if (cacheAge > maxAge) {
