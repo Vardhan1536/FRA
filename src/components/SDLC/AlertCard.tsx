@@ -126,9 +126,10 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
     }
   };
 
-  const formatTimeAgo = (timestamp: Date) => {
+  const formatTimeAgo = (timestamp: Date | string) => {
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60 * 60));
+    const timestampDate = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    const diffInHours = Math.floor((now.getTime() - timestampDate.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
@@ -229,7 +230,17 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
         <div className="text-xs text-gray-500 dark:text-gray-400 max-w-xs truncate">
           {alert.coordinates && (
             <span className="block truncate">
-              Coordinates: {alert.coordinates[0]?.toFixed(6)}, {alert.coordinates[1]?.toFixed(6)}
+              Coordinates: {(() => {
+                console.log('AlertCard coordinates:', alert.coordinates);
+                console.log('Coordinates type:', typeof alert.coordinates);
+                console.log('Coordinates[0]:', alert.coordinates[0], 'type:', typeof alert.coordinates[0]);
+                console.log('Coordinates[1]:', alert.coordinates[1], 'type:', typeof alert.coordinates[1]);
+                
+                const coord1 = typeof alert.coordinates[0] === 'number' ? alert.coordinates[0].toFixed(6) : alert.coordinates[0];
+                const coord2 = typeof alert.coordinates[1] === 'number' ? alert.coordinates[1].toFixed(6) : alert.coordinates[1];
+                
+                return `${coord1}, ${coord2}`;
+              })()}
             </span>
           )}
         </div>

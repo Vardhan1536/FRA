@@ -738,7 +738,11 @@ const Alerts: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Timestamp:</span>
-                        <span className="font-medium">{selectedAlert.timestamp.toLocaleString()}</span>
+                        <span className="font-medium">
+                          {selectedAlert.timestamp instanceof Date 
+                            ? selectedAlert.timestamp.toLocaleString() 
+                            : new Date(selectedAlert.timestamp).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -753,7 +757,7 @@ const Alerts: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
                         <span className="font-medium text-right max-w-48 truncate">
-                          {selectedAlert.coordinates[0]?.toFixed(6)}, {selectedAlert.coordinates[1]?.toFixed(6)}
+                          {typeof selectedAlert.coordinates[0] === 'number' ? selectedAlert.coordinates[0].toFixed(6) : selectedAlert.coordinates[0]}, {typeof selectedAlert.coordinates[1] === 'number' ? selectedAlert.coordinates[1].toFixed(6) : selectedAlert.coordinates[1]}
                         </span>
                       </div>
                     </div>

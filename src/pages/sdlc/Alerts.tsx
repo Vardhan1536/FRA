@@ -30,6 +30,7 @@ const Alerts: React.FC = () => {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [acknowledgeComments, setAcknowledgeComments] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAlerts();
@@ -39,15 +40,30 @@ const Alerts: React.FC = () => {
   }, []);
 
   const loadAlerts = async (forceRefresh: boolean = false) => {
-    if (!currentUser?.role) return;
+    if (!currentUser?.role) {
+      console.log('No current user role found');
+      return;
+    }
     
+    console.log(`Loading alerts for role: ${currentUser.role}, forceRefresh: ${forceRefresh}`);
     setLoading(true);
+    setError(null);
     try {
       // Use the same monitoring API with user role for SDLC
       const alertsData = await alertsAPI.getAll(currentUser.role, forceRefresh);
+      console.log('Alerts data received:', alertsData);
+      console.log('Alerts data type:', typeof alertsData);
+      console.log('Alerts data length:', Array.isArray(alertsData) ? alertsData.length : 'Not an array');
+      console.log('First alert sample:', Array.isArray(alertsData) && alertsData.length > 0 ? alertsData[0] : 'No alerts');
+      
       setAlerts(alertsData);
+      console.log('Alerts state set successfully');
     } catch (error) {
       console.error('Failed to load alerts:', error);
+      // Set empty array instead of leaving it undefined
+      setAlerts([]);
+      // Set user-friendly error message
+      setError('Failed to load alerts. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -116,6 +132,13 @@ const Alerts: React.FC = () => {
   };
 
   const stats = getAlertStats();
+
+  // Debug logging
+  console.log('Component render - alerts:', alerts);
+  console.log('Component render - loading:', loading);
+  console.log('Component render - error:', error);
+  console.log('Component render - filteredAlerts:', filteredAlerts);
+  console.log('Component render - stats:', stats);
 
   return (
     <div className="space-y-8">
@@ -304,6 +327,27 @@ const Alerts: React.FC = () => {
         </div>
       </motion.div>
 
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+        >
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
+                Error Loading Alerts
+              </h3>
+              <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                {error}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Alerts List */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -314,6 +358,19 @@ const Alerts: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+          </div>
+        ) : !Array.isArray(alerts) ? (
+          <div className="text-center py-12">
+            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Data Error
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Alerts data is not in the expected format. Please refresh the page.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              Debug: alerts type is {typeof alerts}
+            </p>
           </div>
         ) : filteredAlerts.length === 0 ? (
           <div className="text-center py-12">
@@ -326,6 +383,9 @@ const Alerts: React.FC = () => {
                 ? 'Try adjusting your filters'
                 : 'No alerts to display at the moment'
               }
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              Total alerts: {alerts.length}, Filtered: {filteredAlerts.length}
             </p>
           </div>
         ) : (
@@ -451,7 +511,11 @@ const Alerts: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Timestamp:</span>
-                        <span className="font-medium">{selectedAlert.timestamp.toLocaleString()}</span>
+                        <span className="font-medium">
+                          {selectedAlert.timestamp instanceof Date 
+                            ? selectedAlert.timestamp.toLocaleString() 
+                            : new Date(selectedAlert.timestamp).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -466,7 +530,7 @@ const Alerts: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
                         <span className="font-medium text-right max-w-48 truncate">
-                          {selectedAlert.coordinates[0]?.toFixed(6)}, {selectedAlert.coordinates[1]?.toFixed(6)}
+                          {typeof selectedAlert.coordinates[0] === 'number' ? selectedAlert.coordinates[0].toFixed(6) : selectedAlert.coordinates[0]}, {typeof selectedAlert.coordinates[1] === 'number' ? selectedAlert.coordinates[1].toFixed(6) : selectedAlert.coordinates[1]}
                         </span>
                       </div>
                     </div>
