@@ -7,7 +7,14 @@ import {
   MapPin, 
   CheckCircle,
   MessageSquare,
-  Eye
+  Eye,
+  TreePine,
+  TrendingDown,
+  Droplets,
+  Flame,
+  Minus,
+  Shield,
+  Bell
 } from 'lucide-react';
 import { Alert } from '../../types';
 
@@ -42,14 +49,43 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string, changeDetection?: any) => {
+    // For change detection alerts, use specific icons based on change type
+    if (changeDetection) {
+      switch (changeDetection.change_type) {
+        case 'Reforestation':
+          return <TreePine className="w-5 h-5 text-green-600" />;
+        case 'Deforestation':
+          return <TrendingDown className="w-5 h-5 text-red-600" />;
+        case 'Water_Level_Change':
+          return <Droplets className="w-5 h-5 text-blue-600" />;
+        case 'Forest_Fire':
+          return <Flame className="w-5 h-5 text-red-600" />;
+        case 'Encroachment':
+          return <AlertTriangle className="w-5 h-5 text-orange-600" />;
+        case 'No_Change':
+          return <Minus className="w-5 h-5 text-gray-600" />;
+        default:
+          return <Shield className="w-5 h-5 text-blue-600" />;
+      }
+    }
+
+    // For regular alerts
     switch (type) {
+      case 'change_detection':
+        return <Shield className="w-5 h-5 text-blue-600" />;
       case 'urgent_review':
         return <Clock className="w-5 h-5 text-red-600" />;
       case 'dss_flag':
         return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
       case 'anomaly':
         return <AlertTriangle className="w-5 h-5 text-purple-600" />;
+      case 'system':
+        return <Bell className="w-5 h-5 text-blue-600" />;
+      case 'deforestation':
+        return <TreePine className="w-5 h-5 text-red-600" />;
+      case 'encroachment':
+        return <Shield className="w-5 h-5 text-orange-600" />;
       default:
         return <AlertTriangle className="w-5 h-5 text-gray-600" />;
     }
@@ -74,10 +110,13 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          {getTypeIcon(alert.type)}
+          {getTypeIcon(alert.type, alert.changeDetection)}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {alert.type.replace('_', ' ').toUpperCase()}
+              {alert.changeDetection 
+                ? `${alert.changeDetection.change_type.replace(/_/g, ' ')} Alert`
+                : alert.type.replace('_', ' ').toUpperCase()
+              }
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {formatTimeAgo(alert.timestamp)}
@@ -107,6 +146,36 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) =
         </div>
         <p className="text-gray-700 dark:text-gray-300">{alert.description}</p>
       </div>
+
+      {/* Change Detection Details */}
+      {alert.changeDetection && (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Area Change:</span>
+              <span className="font-medium">{alert.changeDetection.area_change_hectares} ha</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Confidence:</span>
+              <span className="font-medium">{alert.changeDetection.confidence_score}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Title ID:</span>
+              <span className="font-medium">{alert.changeDetection.title_id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Risk Category:</span>
+              <span className={`font-medium px-2 py-1 rounded text-xs ${
+                alert.changeDetection.risk_category === 'High' ? 'bg-red-100 text-red-800' :
+                alert.changeDetection.risk_category === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                {alert.changeDetection.risk_category}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {alert.acknowledgedBy && (
         <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">

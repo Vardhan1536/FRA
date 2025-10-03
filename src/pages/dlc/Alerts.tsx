@@ -17,17 +17,24 @@ import {
   Shield,
   TreePine,
   AlertCircle,
-  Info
+  Info,
+  TrendingDown,
+  Droplets,
+  Flame,
+  Minus,
+  Bell,
+  RefreshCw
 } from 'lucide-react';
-import { dlcAPI } from '../../utils/api';
+import { dlcAPI, alertsAPI } from '../../utils/api';
 import { Alert } from '../../types';
 
 interface AlertCardProps {
   alert: Alert;
   onAcknowledge: (alertId: string, comments?: string) => void;
+  onView: (alert: Alert) => void;
 }
 
-const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
+const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge, onView }) => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
@@ -54,8 +61,31 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string, changeDetection?: any) => {
+    // For change detection alerts, use specific icons based on change type
+    if (changeDetection) {
+      switch (changeDetection.change_type) {
+        case 'Reforestation':
+          return <TreePine className="w-5 h-5 text-green-500" />;
+        case 'Deforestation':
+          return <TrendingDown className="w-5 h-5 text-red-500" />;
+        case 'Water_Level_Change':
+          return <Droplets className="w-5 h-5 text-blue-500" />;
+        case 'Forest_Fire':
+          return <Flame className="w-5 h-5 text-red-500" />;
+        case 'Encroachment':
+          return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+        case 'No_Change':
+          return <Minus className="w-5 h-5 text-gray-500" />;
+        default:
+          return <Shield className="w-5 h-5 text-blue-500" />;
+      }
+    }
+
+    // For regular alerts
     switch (type) {
+      case 'change_detection':
+        return <Shield className="w-5 h-5 text-blue-500" />;
       case 'deforestation':
         return <TreePine className="w-5 h-5 text-red-500" />;
       case 'encroachment':
@@ -65,14 +95,21 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
       case 'urgent_review':
         return <Clock className="w-5 h-5 text-red-500" />;
       case 'system':
-        return <Info className="w-5 h-5 text-blue-500" />;
+        return <Bell className="w-5 h-5 text-blue-500" />;
       default:
         return <AlertTriangle className="w-5 h-5 text-gray-500" />;
     }
   };
 
-  const getTypeLabel = (type: string) => {
+  const getTypeLabel = (type: string, changeDetection?: any) => {
+    // For change detection alerts, use the specific change type
+    if (changeDetection) {
+      return `${changeDetection.change_type.replace(/_/g, ' ')} Alert`;
+    }
+
     switch (type) {
+      case 'change_detection':
+        return 'Change Detection';
       case 'deforestation':
         return 'Deforestation';
       case 'encroachment':
@@ -110,10 +147,10 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          {getTypeIcon(alert.type)}
+          {getTypeIcon(alert.type, alert.changeDetection)}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {getTypeLabel(alert.type)}
+              {getTypeLabel(alert.type, alert.changeDetection)}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {alert.location}
@@ -138,6 +175,36 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
       <p className="text-gray-700 dark:text-gray-300 mb-4">
         {alert.description}
       </p>
+
+      {/* Change Detection Details */}
+      {alert.changeDetection && (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Area Change:</span>
+              <span className="font-medium">{alert.changeDetection.area_change_hectares} ha</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Confidence:</span>
+              <span className="font-medium">{alert.changeDetection.confidence_score}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Beneficiary ID:</span>
+              <span className="font-medium">{alert.changeDetection.beneficiary_id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Risk Category:</span>
+              <span className={`font-medium px-2 py-1 rounded text-xs ${
+                alert.changeDetection.risk_category === 'High' ? 'bg-red-100 text-red-800' :
+                alert.changeDetection.risk_category === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                {alert.changeDetection.risk_category}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
@@ -168,23 +235,35 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, onAcknowledge }) => {
         </div>
       )}
 
-      {!alert.resolved && (
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Requires DLC attention
-          </div>
-          
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          {alert.resolved ? 'Resolved' : 'Requires DLC attention'}
+        </div>
+        
+        <div className="flex items-center space-x-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => onAcknowledge(alert.id)}
-            className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+            onClick={() => onView(alert)}
+            className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
           >
-            <CheckCircle className="w-4 h-4" />
-            <span>Acknowledge</span>
+            <Eye className="w-4 h-4" />
+            <span>View Details</span>
           </motion.button>
+          
+          {!alert.resolved && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onAcknowledge(alert.id)}
+              className="flex items-center space-x-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Acknowledge</span>
+            </motion.button>
+          )}
         </div>
-      )}
+      </div>
     </motion.div>
   );
 };
@@ -200,18 +279,24 @@ const Alerts: React.FC = () => {
   const [showAcknowledgeModal, setShowAcknowledgeModal] = useState(false);
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const [acknowledgeComments, setAcknowledgeComments] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
   useEffect(() => {
+    console.log('DLC Alerts: Component mounted, loading alerts...');
     loadAlerts();
   }, []);
 
   const loadAlerts = async () => {
+    console.log('DLC Alerts: loadAlerts called');
     setLoading(true);
     try {
-      const alertsData = await dlcAPI.getDLCAerts();
+      // Use the same monitoring API with user role for DLC
+      const alertsData = await alertsAPI.getAll();
+      console.log('DLC Alerts: Received alerts data:', alertsData.length, 'alerts');
       setAlerts(alertsData);
     } catch (error) {
-      console.error('Failed to load alerts:', error);
+      console.error('DLC Alerts: Failed to load alerts:', error);
     } finally {
       setLoading(false);
     }
@@ -222,11 +307,16 @@ const Alerts: React.FC = () => {
     setShowAcknowledgeModal(true);
   };
 
+  const handleViewAlert = (alert: Alert) => {
+    setSelectedAlert(alert);
+    setShowDetailModal(true);
+  };
+
   const handleAcknowledgeSubmit = async () => {
     if (!selectedAlertId) return;
 
     try {
-      await dlcAPI.acknowledgeDLCAlert(selectedAlertId, acknowledgeComments);
+      await alertsAPI.acknowledge(selectedAlertId);
       
       // Update local state
       setAlerts(prev => prev.map(alert => 
@@ -399,61 +489,101 @@ const Alerts: React.FC = () => {
         transition={{ delay: 0.2 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             District-Level Alerts
           </h3>
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search alerts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              />
+          
+          {/* Search and Filters */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 flex-1">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search alerts..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+              
+              <select
+                value={severityFilter}
+                onChange={(e) => setSeverityFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option value="all">All Severities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option value="all">All Types</option>
+                <option value="change_detection">Change Detection</option>
+                <option value="deforestation">Deforestation</option>
+                <option value="encroachment">Encroachment</option>
+                <option value="fraudulent_claims">Fraudulent Claims</option>
+                <option value="urgent_review">Urgent Review</option>
+                <option value="system">System</option>
+              </select>
+              
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              >
+                <option value="all">All Status</option>
+                <option value="unresolved">Unresolved</option>
+                <option value="resolved">Resolved</option>
+              </select>
             </div>
-            <select
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            >
-              <option value="all">All Severities</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            >
-              <option value="all">All Types</option>
-              <option value="deforestation">Deforestation</option>
-              <option value="encroachment">Encroachment</option>
-              <option value="fraudulent_claims">Fraudulent Claims</option>
-              <option value="urgent_review">Urgent Review</option>
-              <option value="system">System</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="unresolved">Unresolved</option>
-              <option value="resolved">Resolved</option>
-            </select>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleExportCSV}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export CSV</span>
-            </motion.button>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={loadAlerts}
+                disabled={loading}
+                className="flex items-center space-x-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={async () => {
+                  try {
+                    await alertsAPI.refreshChangeDetection();
+                    await loadAlerts();
+                  } catch (error) {
+                    console.error('Failed to refresh change detection data:', error);
+                  }
+                }}
+                className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Refresh API</span>
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleExportCSV}
+                className="flex items-center space-x-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export</span>
+              </motion.button>
+            </div>
           </div>
         </div>
 
@@ -468,6 +598,7 @@ const Alerts: React.FC = () => {
                 key={alert.id}
                 alert={alert}
                 onAcknowledge={handleAcknowledge}
+                onView={handleViewAlert}
               />
             ))}
           </div>
@@ -528,6 +659,202 @@ const Alerts: React.FC = () => {
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                 >
                   Acknowledge
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Detailed View Modal */}
+      {showDetailModal && selectedAlert && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDetailModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Alert Details
+                </h2>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Basic Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Alert ID:</span>
+                        <span className="font-medium">{selectedAlert.id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Type:</span>
+                        <span className="font-medium">{selectedAlert.type.replace('_', ' ').toUpperCase()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Severity:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.severity === 'high' ? 'bg-red-100 text-red-800' :
+                          selectedAlert.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {selectedAlert.severity.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.resolved ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedAlert.resolved ? 'RESOLVED' : 'ACTIVE'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Timestamp:</span>
+                        <span className="font-medium">{selectedAlert.timestamp.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Location Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                        <span className="font-medium">{selectedAlert.location}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
+                        <span className="font-medium">{selectedAlert.coordinates[0]}, {selectedAlert.coordinates[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Description</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{selectedAlert.description}</p>
+                </div>
+
+                {/* Change Detection Details */}
+                {selectedAlert.changeDetection && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Change Detection Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Change Type:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.change_type.replace(/_/g, ' ')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Detection Date:</span>
+                        <span className="font-medium">{new Date(selectedAlert.changeDetection.detection_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Area Change:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.area_change_hectares} ha</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Confidence Score:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.confidence_score}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Risk Category:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.changeDetection.risk_category === 'High' ? 'bg-red-100 text-red-800' :
+                          selectedAlert.changeDetection.risk_category === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {selectedAlert.changeDetection.risk_category}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Beneficiary ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.beneficiary_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Asset ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.asset_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Title ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.title_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Village:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.village_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">GP:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.gp_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Block:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.block_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">District:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.district}</span>
+                      </div>
+                    </div>
+                    
+                    {selectedAlert.changeDetection.description && (
+                      <div className="mt-4">
+                        <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Additional Details</h4>
+                        <p className="text-gray-700 dark:text-gray-300">{selectedAlert.changeDetection.description}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Acknowledgment Information */}
+                {selectedAlert.acknowledgedBy && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Acknowledgment Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Acknowledged By:</span>
+                        <span className="font-medium">{selectedAlert.acknowledgedBy}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Acknowledged At:</span>
+                        <span className="font-medium">{selectedAlert.acknowledgedAt?.toLocaleString()}</span>
+                      </div>
+                      {selectedAlert.comments && (
+                        <div className="mt-2">
+                          <span className="text-gray-600 dark:text-gray-400">Comments:</span>
+                          <p className="text-gray-700 dark:text-gray-300 mt-1">{selectedAlert.comments}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowDetailModal(false)}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  Close
                 </motion.button>
               </div>
             </div>

@@ -9,10 +9,11 @@ import {
   Filter,
   Search,
   RefreshCw,
-  Bell
+  Bell,
+  XCircle
 } from 'lucide-react';
 import AlertCard from '../../components/SDLC/AlertCard';
-import { sdlcAPI } from '../../utils/api';
+import { sdlcAPI, alertsAPI } from '../../utils/api';
 import { Alert } from '../../types';
 
 const Alerts: React.FC = () => {
@@ -26,6 +27,7 @@ const Alerts: React.FC = () => {
   const [showAcknowledgeModal, setShowAcknowledgeModal] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [acknowledgeComments, setAcknowledgeComments] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     loadAlerts();
@@ -37,7 +39,8 @@ const Alerts: React.FC = () => {
   const loadAlerts = async () => {
     setLoading(true);
     try {
-      const alertsData = await sdlcAPI.getSDLCAlerts();
+      // Use the same monitoring API with user role for SDLC
+      const alertsData = await alertsAPI.getAll();
       setAlerts(alertsData);
     } catch (error) {
       console.error('Failed to load alerts:', error);
@@ -58,7 +61,7 @@ const Alerts: React.FC = () => {
     if (!selectedAlert) return;
 
     try {
-      await sdlcAPI.acknowledgeAlert(selectedAlert.id, acknowledgeComments);
+      await alertsAPI.acknowledge(selectedAlert.id);
       
       // Update local state
       setAlerts(prev => prev.map(alert => 
@@ -66,7 +69,7 @@ const Alerts: React.FC = () => {
           ? { 
               ...alert, 
               resolved: true,
-              acknowledgedBy: 'Current User',
+              acknowledgedBy: 'SDLC Officer',
               acknowledgedAt: new Date(),
               comments: acknowledgeComments
             }
@@ -82,8 +85,8 @@ const Alerts: React.FC = () => {
   };
 
   const handleViewAlert = (alert: Alert) => {
-    // In a real app, this would navigate to a detailed view or open a map
-    console.log('Viewing alert:', alert);
+    setSelectedAlert(alert);
+    setShowDetailModal(true);
   };
 
   const filteredAlerts = alerts.filter(alert => {
@@ -248,10 +251,12 @@ const Alerts: React.FC = () => {
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
+              <option value="change_detection">Change Detection</option>
               <option value="urgent_review">Urgent Review</option>
               <option value="dss_flag">DSS Flag</option>
               <option value="anomaly">Anomaly</option>
               <option value="encroachment">Encroachment</option>
+              <option value="deforestation">Deforestation</option>
             </select>
             
             <select
@@ -274,6 +279,23 @@ const Alerts: React.FC = () => {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={async () => {
+              try {
+                await alertsAPI.refreshChangeDetection();
+                await loadAlerts();
+              } catch (error) {
+                console.error('Failed to refresh change detection data:', error);
+              }
+            }}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh Change Detection</span>
           </motion.button>
         </div>
       </motion.div>
@@ -362,6 +384,202 @@ const Alerts: React.FC = () => {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Detailed View Modal */}
+      {showDetailModal && selectedAlert && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDetailModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Alert Details
+                </h2>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Basic Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Alert ID:</span>
+                        <span className="font-medium">{selectedAlert.id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Type:</span>
+                        <span className="font-medium">{selectedAlert.type.replace('_', ' ').toUpperCase()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Severity:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.severity === 'high' ? 'bg-red-100 text-red-800' :
+                          selectedAlert.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {selectedAlert.severity.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.resolved ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedAlert.resolved ? 'RESOLVED' : 'ACTIVE'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Timestamp:</span>
+                        <span className="font-medium">{selectedAlert.timestamp.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Location Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                        <span className="font-medium">{selectedAlert.location}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Coordinates:</span>
+                        <span className="font-medium">{selectedAlert.coordinates[0]}, {selectedAlert.coordinates[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Description</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{selectedAlert.description}</p>
+                </div>
+
+                {/* Change Detection Details */}
+                {selectedAlert.changeDetection && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Change Detection Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Change Type:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.change_type.replace(/_/g, ' ')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Detection Date:</span>
+                        <span className="font-medium">{new Date(selectedAlert.changeDetection.detection_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Area Change:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.area_change_hectares} ha</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Confidence Score:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.confidence_score}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Risk Category:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedAlert.changeDetection.risk_category === 'High' ? 'bg-red-100 text-red-800' :
+                          selectedAlert.changeDetection.risk_category === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {selectedAlert.changeDetection.risk_category}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Beneficiary ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.beneficiary_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Asset ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.asset_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Title ID:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.title_id}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Village:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.village_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">GP:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.gp_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Block:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.block_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">District:</span>
+                        <span className="font-medium">{selectedAlert.changeDetection.district}</span>
+                      </div>
+                    </div>
+                    
+                    {selectedAlert.changeDetection.description && (
+                      <div className="mt-4">
+                        <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Additional Details</h4>
+                        <p className="text-gray-700 dark:text-gray-300">{selectedAlert.changeDetection.description}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Acknowledgment Information */}
+                {selectedAlert.acknowledgedBy && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Acknowledgment Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Acknowledged By:</span>
+                        <span className="font-medium">{selectedAlert.acknowledgedBy}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Acknowledged At:</span>
+                        <span className="font-medium">{selectedAlert.acknowledgedAt?.toLocaleString()}</span>
+                      </div>
+                      {selectedAlert.comments && (
+                        <div className="mt-2">
+                          <span className="text-gray-600 dark:text-gray-400">Comments:</span>
+                          <p className="text-gray-700 dark:text-gray-300 mt-1">{selectedAlert.comments}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowDetailModal(false)}
+                  className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  Close
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

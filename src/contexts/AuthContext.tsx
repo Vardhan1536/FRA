@@ -84,12 +84,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       displayName
     };
     setCurrentUser(userData);
+    
+    // Store user role in localStorage for API calls
+    localStorage.setItem('userRole', role);
+    localStorage.setItem('userData', JSON.stringify(userData));
   };
 
   const logout = async () => {
     // For development, just clear the user
     // In production, use: await signOut(auth);
     setCurrentUser(null);
+    
+    // Clear user data from localStorage
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userData');
   };
 
   const value = {
