@@ -314,3 +314,19 @@ export interface SchemeEligibilityGroup {
     reasons: string[];
   }[];
 }
+
+// Resource suggestion interfaces
+export interface ResourceIntervention {
+  scheme: string;
+  reason: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface VillageResourceSuggestions {
+  interventions: ResourceIntervention[];
+}
+
+export interface ResourceSuggestionsResponse {
+  [villageId: string]: VillageResourceSuggestions;
+}

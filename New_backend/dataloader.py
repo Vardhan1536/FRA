@@ -263,10 +263,10 @@ def load_data(work: str, input_id: str, query: None) -> dict:
 #     print("suggest_resources data:")
 #     print(json.dumps(result, indent=2, ensure_ascii=False))
     
-    # Test eligibility_check
-    result = load_data("eligibility_check", "FRA_00000020,FRA_TITLE_00000014","empty")
-    print("\neligibility_check data:")
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    # # Test eligibility_check
+    # result = load_data("eligibility_check", "FRA_00000020,FRA_TITLE_00000014","empty")
+    # print("\neligibility_check data:")
+    # print(json.dumps(result, indent=2, ensure_ascii=False))
     
 #     # Test legal_assistance
 #     result = load_data("legal_assistance", "FRA_00000020,FRA_TITLE_00000014")

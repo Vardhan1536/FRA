@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Claim, NewClaimSubmission, DSSValidation, ClaimEscalation, Scheme, Alert, BeneficiarySchemeEligibility, SchemeEligibilityGroup } from '../types';
+import { Claim, NewClaimSubmission, DSSValidation, ClaimEscalation, Scheme, Alert, BeneficiarySchemeEligibility, SchemeEligibilityGroup, ResourceSuggestionsResponse } from '../types';
 
 export const claimsAPI = {
   submit: async (_claimData: FormData): Promise<Claim> => {
@@ -1242,6 +1242,7 @@ export const cacheManager = {
       key.startsWith('beneficiaries_') ||
       key.startsWith('legal_assistance_') ||
       key.startsWith('scheme_eligibility_') ||
+      key.startsWith('resource_suggestions_') ||
       key.startsWith('pendingClaims')
     );
     
@@ -1258,6 +1259,7 @@ export const cacheManager = {
     beneficiaries: { [role: string]: { exists: boolean; age: number; dataCount: number } };
     legalAssistance: { count: number; totalSize: number };
     schemeEligibility: { [role: string]: { exists: boolean; age: number; dataCount: number } };
+    resourceSuggestions: { [role: string]: { exists: boolean; age: number; dataCount: number } };
     totalSize: number;
   } => {
     // Get alerts cache info for all roles
@@ -1311,6 +1313,30 @@ export const cacheManager = {
     
     const legalInfo = legalAssistanceAPI.getCacheInfo();
     
+    // Get resource suggestions cache info for all roles
+    const resourceSuggestionsInfo: { [role: string]: { exists: boolean; age: number; dataCount: number } } = {};
+    const resourceKeys = localStorageKeys.filter(key => key.startsWith('resource_suggestions_'));
+    
+    resourceKeys.forEach(key => {
+      const role = key.replace('resource_suggestions_', '');
+      try {
+        const cachedData = localStorage.getItem(key);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const age = Date.now() - parsed.timestamp;
+          resourceSuggestionsInfo[role] = {
+            exists: true,
+            age: age,
+            dataCount: Object.keys(parsed.data || {}).length
+          };
+        } else {
+          resourceSuggestionsInfo[role] = { exists: false, age: 0, dataCount: 0 };
+        }
+      } catch (error) {
+        resourceSuggestionsInfo[role] = { exists: false, age: 0, dataCount: 0 };
+      }
+    });
+    
     // Get scheme eligibility cache info for all roles
     const schemeEligibilityInfo: { [role: string]: { exists: boolean; age: number; dataCount: number } } = {};
     const schemeKeys = localStorageKeys.filter(key => key.startsWith('scheme_eligibility_'));
@@ -1349,6 +1375,7 @@ export const cacheManager = {
       beneficiaries: beneficiariesInfo,
       legalAssistance: legalInfo,
       schemeEligibility: schemeEligibilityInfo,
+      resourceSuggestions: resourceSuggestionsInfo,
       totalSize: totalSize
     };
   },
@@ -1625,6 +1652,202 @@ export const schemeEligibilityAPI = {
           }
         } catch (error) {
           console.error('Error reading scheme eligibility cache info:', error);
+        }
+      });
+      
+      return {
+        exists: hasAnyCache,
+        age: oldestAge,
+        dataCount: totalDataCount
+      };
+    }
+    
+    return { exists: false, age: 0, dataCount: 0 };
+  }
+};
+
+export const notificationsAPI = {
+  notifyEligibleBeneficiaries: async (schemeName: string, role: string): Promise<{ success: boolean; message: string; notifiedCount: number }> => {
+    try {
+      console.log(`Notifying eligible beneficiaries for scheme: ${schemeName}, role: ${role}`);
+      
+      const response = await axios.post('http://127.0.0.1:8000/notify-eligible-beneficiaries', {
+        scheme_name: schemeName,
+        role: role
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000, // 30 second timeout
+      });
+
+      console.log('Notify beneficiaries API response:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error notifying eligible beneficiaries:', error);
+      
+      // If API call fails, show user-friendly error message
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // Server responded with error status
+          const errorMessage = error.response.data?.message || error.response.data?.error || 'Server error occurred';
+          throw new Error(`API Error (${error.response.status}): ${errorMessage}`);
+        } else if (error.request) {
+          // Request was made but no response received
+          throw new Error('Unable to connect to the notification service. Please check your internet connection and try again.');
+        } else {
+          // Something else happened
+          throw new Error('An unexpected error occurred. Please try again.');
+        }
+      } else {
+        // Non-Axios error
+        throw new Error('An unexpected error occurred. Please try again.');
+      }
+    }
+  }
+};
+
+export const resourceSuggestionsAPI = {
+  getResourceSuggestions: async (role: string, forceRefresh: boolean = false): Promise<ResourceSuggestionsResponse> => {
+    const cacheKey = `resource_suggestions_${role}`;
+    const maxCacheAge = 30 * 60 * 1000; // 30 minutes cache
+    
+    // Check cache first unless force refresh is requested
+    if (!forceRefresh) {
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const cacheAge = Date.now() - parsed.timestamp;
+          
+          if (cacheAge < maxCacheAge) {
+            console.log(`Loading resource suggestions from cache for role: ${role} (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+            return parsed.data;
+          } else {
+            console.log('Resource suggestions cache expired, fetching fresh data');
+            localStorage.removeItem(cacheKey);
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing cached resource suggestions data:', error);
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
+    try {
+      console.log(`Fetching resource suggestions for role: ${role}`);
+      
+      const response = await axios.get('http://127.0.0.1:8000/suggest-resources', {
+        params: {
+          role: role
+        },
+        timeout: 30000, // 30 second timeout
+      });
+
+      console.log('Resource suggestions API response:', response.data);
+      
+      // Cache the results
+      const cacheData = {
+        data: response.data,
+        timestamp: Date.now(),
+        role: role
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+      console.log(`Cached resource suggestions data for role: ${role} for ${maxCacheAge / 1000 / 60} minutes`);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching resource suggestions:', error);
+      
+      // Try to load from cache if API fails
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          console.log(`API failed, loading resource suggestions from cache as fallback for role: ${role}`);
+          return parsed.data;
+        }
+      } catch (cacheError) {
+        console.error('Error loading resource suggestions from cache fallback:', cacheError);
+      }
+      
+      // If API call fails and no valid cache, show user-friendly error message
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // Server responded with error status
+          const errorMessage = error.response.data?.message || error.response.data?.error || 'Server error occurred';
+          throw new Error(`API Error (${error.response.status}): ${errorMessage}`);
+        } else if (error.request) {
+          // Request was made but no response received
+          throw new Error('Unable to connect to the resource suggestions service. Please check your internet connection and try again.');
+        } else {
+          // Something else happened
+          throw new Error('An unexpected error occurred. Please try again.');
+        }
+      } else {
+        // Non-Axios error
+        throw new Error('An unexpected error occurred. Please try again.');
+      }
+    }
+  },
+
+  // Cache management utilities
+  clearCache: (role?: string): void => {
+    if (role) {
+      localStorage.removeItem(`resource_suggestions_${role}`);
+      console.log(`Cleared resource suggestions cache for role: ${role}`);
+    } else {
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('resource_suggestions_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log('Cleared all resource suggestions caches');
+    }
+  },
+
+  getCacheInfo: (role?: string): { exists: boolean; age: number; dataCount: number } => {
+    const cacheKey = role ? `resource_suggestions_${role}` : 'resource_suggestions_all';
+    
+    if (role) {
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const age = Date.now() - parsed.timestamp;
+          return {
+            exists: true,
+            age: age,
+            dataCount: Object.keys(parsed.data || {}).length
+          };
+        }
+      } catch (error) {
+        console.error('Error reading resource suggestions cache info:', error);
+      }
+    } else {
+      // Get info for all roles
+      const keys = Object.keys(localStorage);
+      const resourceKeys = keys.filter(key => key.startsWith('resource_suggestions_'));
+      let totalDataCount = 0;
+      let hasAnyCache = false;
+      let oldestAge = 0;
+      
+      resourceKeys.forEach(key => {
+        try {
+          const cachedData = localStorage.getItem(key);
+          if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            const age = Date.now() - parsed.timestamp;
+            totalDataCount += Object.keys(parsed.data || {}).length;
+            hasAnyCache = true;
+            if (age > oldestAge) {
+              oldestAge = age;
+            }
+          }
+        } catch (error) {
+          console.error('Error reading resource suggestions cache info:', error);
         }
       });
       

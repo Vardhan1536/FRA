@@ -17,11 +17,12 @@ import {
   X,
   Eye,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bell
 } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
-import { schemeEligibilityAPI } from '../../utils/api';
+import { schemeEligibilityAPI, notificationsAPI } from '../../utils/api';
 import { BeneficiarySchemeEligibility, SchemeEligibilityGroup } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -30,9 +31,12 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 interface SchemeEligibilityCardProps {
   schemeGroup: SchemeEligibilityGroup;
   onViewDetails: (schemeGroup: SchemeEligibilityGroup) => void;
+  onNotifyEligible: (schemeName: string) => void;
+  isNotifying?: boolean;
+  notifiedSchemes: Set<string>;
 }
 
-const SchemeEligibilityCard: React.FC<SchemeEligibilityCardProps> = ({ schemeGroup, onViewDetails }) => {
+const SchemeEligibilityCard: React.FC<SchemeEligibilityCardProps> = ({ schemeGroup, onViewDetails, onNotifyEligible, isNotifying, notifiedSchemes }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   const totalBeneficiaries = schemeGroup.eligible_beneficiaries.length + schemeGroup.ineligible_beneficiaries.length;
@@ -78,6 +82,34 @@ const SchemeEligibilityCard: React.FC<SchemeEligibilityCardProps> = ({ schemeGro
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </motion.button>
+          {schemeGroup.eligible_beneficiaries.length > 0 && (
+            <motion.button
+              whileHover={{ scale: notifiedSchemes.has(schemeGroup.scheme_name) ? 1 : 1.05 }}
+              whileTap={{ scale: notifiedSchemes.has(schemeGroup.scheme_name) ? 1 : 0.95 }}
+              onClick={() => onNotifyEligible(schemeGroup.scheme_name)}
+              disabled={isNotifying || notifiedSchemes.has(schemeGroup.scheme_name)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium disabled:cursor-not-allowed ${
+                notifiedSchemes.has(schemeGroup.scheme_name)
+                  ? 'bg-green-600 text-white cursor-not-allowed'
+                  : isNotifying
+                  ? 'bg-blue-600 text-white opacity-50'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {notifiedSchemes.has(schemeGroup.scheme_name) ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <Bell className={`w-4 h-4 ${isNotifying ? 'animate-pulse' : ''}`} />
+              )}
+              <span>
+                {notifiedSchemes.has(schemeGroup.scheme_name)
+                  ? 'Notified'
+                  : isNotifying
+                  ? 'Notifying...'
+                  : 'Notify Eligible'}
+              </span>
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -180,6 +212,8 @@ const Schemes: React.FC = () => {
   const [selectedScheme, setSelectedScheme] = useState<SchemeEligibilityGroup | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [stats, setStats] = useState<any>(null);
+  const [notifyingScheme, setNotifyingScheme] = useState<string | null>(null);
+  const [notifiedSchemes, setNotifiedSchemes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadSchemeEligibility();
@@ -205,6 +239,26 @@ const Schemes: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleNotifyEligible = async (schemeName: string) => {
+    if (!currentUser?.role) return;
+    
+    setNotifyingScheme(schemeName);
+    
+    // Simulate API call with delay
+    setTimeout(() => {
+      // Mark scheme as notified
+      setNotifiedSchemes(prev => new Set(prev).add(schemeName));
+      setNotifyingScheme(null);
+      
+      // Find the scheme to get eligible count
+      const schemeGroup = groupedSchemes.find(s => s.scheme_name === schemeName);
+      const eligibleCount = schemeGroup?.eligible_beneficiaries.length || 0;
+      
+      // Show success message
+      alert(`Successfully notified ${eligibleCount} eligible beneficiaries for ${schemeName}`);
+    }, 1500); // 1.5 second delay to simulate API call
   };
 
   const handleViewDetails = (schemeGroup: SchemeEligibilityGroup) => {
@@ -552,6 +606,9 @@ const Schemes: React.FC = () => {
                 key={schemeGroup.scheme_name}
                 schemeGroup={schemeGroup}
                 onViewDetails={handleViewDetails}
+                onNotifyEligible={handleNotifyEligible}
+                isNotifying={notifyingScheme === schemeGroup.scheme_name}
+                notifiedSchemes={notifiedSchemes}
               />
             ))}
           </div>

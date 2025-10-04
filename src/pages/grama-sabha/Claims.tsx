@@ -843,7 +843,7 @@ const Claims: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Map className="w-4 h-4" />
-                    <span>Forest Area: {claim.admin_info.forest_area_hectares.toFixed(2)} ha</span>
+                    <span>Forest Area: {claim.admin_info.forest_area_hectares ? claim.admin_info.forest_area_hectares.toFixed(2) : 'N/A'} ha</span>
                   </div>
                 </div>
               )}
@@ -884,7 +884,7 @@ const Claims: React.FC = () => {
                     <span className="text-sm font-medium text-orange-800 dark:text-orange-300">Vulnerability</span>
                   </div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    <div>Score: {claim.vulnerability.score.toFixed(2)}</div>
+                    <div>Score: {claim.vulnerability.score ? claim.vulnerability.score.toFixed(2) : 'N/A'}</div>
                     {claim.vulnerability.category && <div>Category: {claim.vulnerability.category}</div>}
                   </div>
                 </div>
@@ -1654,7 +1654,7 @@ const Claims: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Forest Area</h4>
-                      <p className="text-gray-900 dark:text-white">{selectedClaim.admin_info.forest_area_hectares.toFixed(2)} hectares</p>
+                      <p className="text-gray-900 dark:text-white">{selectedClaim.admin_info.forest_area_hectares ? selectedClaim.admin_info.forest_area_hectares.toFixed(2) : 'N/A'} hectares</p>
                     </div>
                   </div>
                 </div>
@@ -1724,7 +1724,7 @@ const Claims: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vulnerability Score</h4>
-                      <p className="text-gray-900 dark:text-white">{selectedClaim.vulnerability.score.toFixed(2)}</p>
+                      <p className="text-gray-900 dark:text-white">{selectedClaim.vulnerability.score ? selectedClaim.vulnerability.score.toFixed(2) : 'N/A'}</p>
                     </div>
                     {selectedClaim.vulnerability.category && (
                       <div>
@@ -1816,7 +1816,7 @@ const Claims: React.FC = () => {
                           <div>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {file.type} • {(file.size / 1024).toFixed(1)} KB
+                              {file.type} • {file.size ? (file.size / 1024).toFixed(1) : '0.0'} KB
                             </p>
                           </div>
                         </div>
