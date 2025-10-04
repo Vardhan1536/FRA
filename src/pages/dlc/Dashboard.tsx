@@ -385,48 +385,13 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         <div className="h-96 rounded-lg overflow-hidden map-container">
-          <MapContainer
-            center={[22.9734, 78.6569]}
-            zoom={10}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <MapComponent />
-            {claims.map((claim) => (
-              <Marker
-                key={claim.id}
-                position={claim.coordinates}
-                icon={L.divIcon({
-                  className: 'custom-marker',
-                  html: `<div class="w-4 h-4 rounded-full ${
-                    claim.status === 'Approved' ? 'bg-green-500' :
-                    claim.status === 'Rejected' ? 'bg-red-500' : 'bg-purple-500'
-                  } border-2 border-white shadow-lg"></div>`,
-                  iconSize: [16, 16],
-                  iconAnchor: [8, 8]
-                })}
-              >
-                <Popup>
-                  <div className="p-2">
-                    <h4 className="font-semibold">{claim.id}</h4>
-                    <p className="text-sm">{claim.applicantName}</p>
-                    <p className="text-sm text-gray-600">{claim.village}</p>
-                    <p className="text-sm">{claim.area} hectares</p>
-                    <p className="text-xs text-purple-600">Escalated by SDLC</p>
-                    <button
-                      onClick={() => handleClaimReview(claim)}
-                      className="mt-2 px-3 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700"
-                    >
-                      Final Decision
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+          
+            
+          <iframe
+  src="/mandla_landcover_interactive_map.html"
+  title="Landcover Interactive Map"
+  className="w-full aspect-video rounded-xl border border-cyan-400/20 bg-white"
+/>
         </div>
       </motion.div>
 
