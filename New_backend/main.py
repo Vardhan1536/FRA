@@ -8,7 +8,7 @@ import google.generativeai as genai
 from eligibility_check_agent import EligibilityAgent
 from dataloader import load_data
 from scheme_eligibility import SchemeEligibilityAgent 
-
+from resource_suggestion import ResourceSuggestionAgent
 app = FastAPI()
 
 # Enable CORS
@@ -26,7 +26,7 @@ GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 @app.on_event("startup")
 def startup():
     initialize_demo_data()
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyCAWPWdlnOYK-qONocy8MnO-WqGaE2r6eQ"))
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyCSmQzpLgR3XkvxITUhLx-TXAGqp_9qmkk"))
     model = genai.GenerativeModel('gemini-2.5-flash')
     agent = EligibilityAgent(model)
     
@@ -49,7 +49,7 @@ def startup():
         app["schemes_eligibility"] = grouped_schemes.get(beneficiary_id, [])
     
     # Add monitoring precomputation
-    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCAWPWdlnOYK-qONocy8MnO-WqGaE2r6eQ")
+    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCSmQzpLgR3XkvxITUhLx-TXAGqp_9qmkk")
     roles = ["DLC", "SDLC", "GramaSabha"]
     global GLOBAL_MONITORING_RESULTS
     GLOBAL_MONITORING_RESULTS = {}
@@ -59,6 +59,21 @@ def startup():
             GLOBAL_MONITORING_RESULTS[role] = json.loads(result_str)
         except Exception as e:
             print(f"Error precomputing monitoring for {role}: {str(e)}")
+            
+            
+    global GLOBAL_RESOURCE_SUGGESTIONS
+    GLOBAL_RESOURCE_SUGGESTIONS = {}
+    resource_agent = ResourceSuggestionAgent(model)  # Assuming it's a class like SchemeEligibilityAgent
+    for village_id in GLOBAL_VILLAGES:
+        try:
+            data = load_data("suggest_resources", village_id,"None")
+            if "error" in data:
+                print(f"Error loading data for village {village_id}: {data['error']}")
+                continue
+            result = resource_agent.suggest_resources(data)  # Assuming method name; adjust if different (e.g., check_eligibility or similar)
+            GLOBAL_RESOURCE_SUGGESTIONS[village_id] = result
+        except Exception as e:
+            print(f"Error precomputing resource suggestions for village {village_id}: {str(e)}")
 
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
@@ -140,28 +155,35 @@ async def suggest_resources(role: str = None):
     if not role:
         raise HTTPException(status_code=400, detail="Role is required")
     
+    # Determine relevant villages based on role
+    relevant_villages = []
     if role == "DLC":
-        filtered_records = GLOBAL_APPLICATIONS
+        relevant_villages = list(GLOBAL_VILLAGES.keys())
     elif role == "SDLC":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000001"]
+        for vid, vdata in GLOBAL_VILLAGES.items():
+            if vdata.get("block_id") == "BLK_000001":
+                relevant_villages.append(vid)
     elif role == "GramaSabha":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000001"]
+        for vid, vdata in GLOBAL_VILLAGES.items():
+            if vdata.get("gp_id") == "GP_000001":
+                relevant_villages.append(vid)
     else:
-        raise HTTPException(status_code=400, detail="Invalid role. Supported roles: dlc, sdlc, gramasabha")
+        raise HTTPException(status_code=400, detail="Invalid role. Supported roles: DLC, SDLC, GramaSabha")
     
-    if not filtered_records:
-        raise HTTPException(status_code=404, detail="No records found for this role")
+    if not relevant_villages:
+        raise HTTPException(status_code=404, detail="No villages found for this role")
     
-    # Fetch the first relevant village_id
-    village_id = filtered_records[0]["admin_info"]["village_id"]
+    # Collect precomputed suggestions for relevant villages
+    results = {}
+    for vid in relevant_villages:
+        suggestion = GLOBAL_RESOURCE_SUGGESTIONS.get(vid)
+        if suggestion:
+            results[vid] = suggestion
     
-    # Load data for the village
-    data = load_data("suggest_resources", village_id)
-    if "error" in data:
-        raise HTTPException(status_code=500, detail=data["error"])
-
+    if not results:
+        raise HTTPException(status_code=404, detail="No resource suggestions found for this role")
     
-    return data
+    return results
 
 if __name__ == "__main__":
     import uvicorn

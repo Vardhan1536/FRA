@@ -8,18 +8,21 @@ import Dashboard from './pages/grama-sabha/Dashboard';
 import MapView from './pages/grama-sabha/MapView';
 import Claims from './pages/grama-sabha/Claims';
 import Schemes from './pages/grama-sabha/Schemes';
+import ResourceSuggestions from './pages/grama-sabha/ResourceSuggestions';
 import Alerts from './pages/grama-sabha/Alerts';
 import Settings from './pages/grama-sabha/Settings';
 // SDLC pages
 import SDLCDashboard from './pages/sdlc/Dashboard';
 import SDLCClaims from './pages/sdlc/Claims';
 import SDLCSchemes from './pages/sdlc/Schemes';
+import SDLCResourceSuggestions from './pages/sdlc/ResourceSuggestions';
 import SDLCAlerts from './pages/sdlc/Alerts';
 import SDLCSettings from './pages/sdlc/Settings';
 // DLC pages
 import DLCDashboard from './pages/dlc/Dashboard';
 import DLCClaims from './pages/dlc/Claims';
 import DLCSchemes from './pages/dlc/Schemes';
+import DLCResourceSuggestions from './pages/dlc/ResourceSuggestions';
 import DLCAlerts from './pages/dlc/Alerts';
 import DLCSettings from './pages/dlc/Settings';
 import './i18n';
@@ -75,6 +78,7 @@ const AppContent: React.FC = () => {
           <Route path="map" element={<MapView />} />
           <Route path="claims" element={<Claims />} />
           <Route path="schemes" element={<Schemes />} />
+          <Route path="resource-suggestions" element={<ResourceSuggestions />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="settings" element={<Settings />} />
         </Route>
@@ -92,6 +96,7 @@ const AppContent: React.FC = () => {
           <Route path="dashboard" element={<SDLCDashboard />} />
           <Route path="claims" element={<SDLCClaims />} />
           <Route path="schemes" element={<SDLCSchemes />} />
+          <Route path="resource-suggestions" element={<SDLCResourceSuggestions />} />
           <Route path="alerts" element={<SDLCAlerts />} />
           <Route path="settings" element={<SDLCSettings />} />
         </Route>
@@ -109,6 +114,7 @@ const AppContent: React.FC = () => {
           <Route path="dashboard" element={<DLCDashboard />} />
           <Route path="claims" element={<DLCClaims />} />
           <Route path="schemes" element={<DLCSchemes />} />
+          <Route path="resource-suggestions" element={<DLCResourceSuggestions />} />
           <Route path="alerts" element={<DLCAlerts />} />
           <Route path="settings" element={<DLCSettings />} />
         </Route>
