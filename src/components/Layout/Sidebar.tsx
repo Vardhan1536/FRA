@@ -11,7 +11,8 @@ import {
   LogOut,
   X,
   Building,
-  Lightbulb
+  Lightbulb,
+  FileCheck
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
@@ -37,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       return [
         { path: '/sdlc/dashboard', icon: Home, label: t('sdlc_dashboard') },
         { path: '/sdlc/claims', icon: FileText, label: t('claims') },
+        { path: '/sdlc/check-patta', icon: FileCheck, label: 'Check Patta' },
         { path: '/sdlc/schemes', icon: Building, label: 'Schemes' },
         { path: '/sdlc/resource-suggestions', icon: Lightbulb, label: 'Resource Suggestions' },
         { path: '/sdlc/alerts', icon: AlertTriangle, label: t('alerts') },
@@ -46,6 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       return [
         { path: '/dlc/dashboard', icon: Home, label: 'DLC Dashboard' },
         { path: '/dlc/claims', icon: FileText, label: t('claims') },
+        { path: '/dlc/check-patta', icon: FileCheck, label: 'Check Patta' },
         { path: '/dlc/schemes', icon: Building, label: 'Schemes' },
         { path: '/dlc/resource-suggestions', icon: Lightbulb, label: 'Resource Suggestions' },
         { path: '/dlc/alerts', icon: AlertTriangle, label: t('alerts') },
@@ -57,6 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/grama-sabha/dashboard', icon: Home, label: t('dashboard') },
         { path: '/grama-sabha/map', icon: Map, label: t('map') },
         { path: '/grama-sabha/claims', icon: FileText, label: t('claims') },
+        { path: '/grama-sabha/check-patta', icon: FileCheck, label: 'Check Patta' },
         { path: '/grama-sabha/schemes', icon: Building, label: 'Schemes' },
         { path: '/grama-sabha/resource-suggestions', icon: Lightbulb, label: 'Resource Suggestions' },
         { path: '/grama-sabha/alerts', icon: AlertTriangle, label: t('alerts') },

@@ -26,7 +26,8 @@ GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 @app.on_event("startup")
 def startup():
     initialize_demo_data()
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyCSmQzpLgR3XkvxITUhLx-TXAGqp_9qmkk"))
+    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCSmQzpLgR3XkvxITUhLx-TXAGqp_9qmkk")
+    genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-2.5-flash')
     agent = EligibilityAgent(model)
     
@@ -49,7 +50,7 @@ def startup():
         app["schemes_eligibility"] = grouped_schemes.get(beneficiary_id, [])
     
     # Add monitoring precomputation
-    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyCSmQzpLgR3XkvxITUhLx-TXAGqp_9qmkk")
+    
     roles = ["DLC", "SDLC", "GramaSabha"]
     global GLOBAL_MONITORING_RESULTS
     GLOBAL_MONITORING_RESULTS = {}
@@ -92,9 +93,9 @@ async def get_scheme_eligibility(role: str = None):
     if role == "DLC":
         filtered_records = GLOBAL_APPLICATIONS
     elif role == "SDLC":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000001"]
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000004"]
     elif role == "GramaSabha":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000001"]
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000157"]
     else:
         raise HTTPException(status_code=400, detail="Invalid role. Supported roles: DLC, SDLC, GramaSabha")
     
@@ -118,9 +119,9 @@ async def get_beneficiaries(role: str = None):
     if role == "DLC":
         filtered_records = GLOBAL_APPLICATIONS
     elif role == "SDLC":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000001"]
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("block_id") == "BLK_000004"]
     elif role == "GramaSabha":
-        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000001"]
+        filtered_records = [app for app in GLOBAL_APPLICATIONS if app.get("admin_info", {}).get("gp_id") == "GP_000157"]
     else:
         raise HTTPException(status_code=400, detail="Invalid role. Supported roles: dlc, sdlc, gramasabha")
     
@@ -161,11 +162,11 @@ async def suggest_resources(role: str = None):
         relevant_villages = list(GLOBAL_VILLAGES.keys())
     elif role == "SDLC":
         for vid, vdata in GLOBAL_VILLAGES.items():
-            if vdata.get("block_id") == "BLK_000001":
+            if vdata.get("block_id") == "BLK_000004":
                 relevant_villages.append(vid)
     elif role == "GramaSabha":
         for vid, vdata in GLOBAL_VILLAGES.items():
-            if vdata.get("gp_id") == "GP_000001":
+            if vdata.get("gp_id") == "GP_000157":
                 relevant_villages.append(vid)
     else:
         raise HTTPException(status_code=400, detail="Invalid role. Supported roles: DLC, SDLC, GramaSabha")

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test localStorage</title>
+</head>
+<body>
+    <h1>localStorage Test</h1>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <button onclick="checkLocalStorage()">Check localStorage</button>
+    <div id="result"></div>
+
+    <script>
+        function testLocalStorage() {
+            const testDoc = {
+                id: `PATA_TEST_${Date.now()}`,
+                beneficiaryName: 'Test User',
+                aadhaarNumber: '9999-9999-9999',
+                village: 'चिरमिरी',
+                documentType: 'Test Document',
+                uploadDate: new Date().toISOString(),
+                status: 'Pending Review',
+                fileName: 'test_document.pdf',
+                fileSize: 1024000,
+                fileType: 'application/pdf',
+                volunteerName: 'Test Volunteer',
+                notes: 'This is a test document',
+                coordinates: {
+                    latitude: 22.220035169973066,
+                    longitude: 80.27602945502146
+                },
+                gramaSabhaApproved: false,
+                sdlcReviewStatus: 'Pending'
+            };
+            
+            const existingDocuments = JSON.parse(localStorage.getItem('volunteerUploadedPattas') || '[]');
+            existingDocuments.unshift(testDoc);
+            localStorage.setItem('volunteerUploadedPattas', JSON.stringify(existingDocuments));
+            
+            document.getElementById('result').innerHTML = '<p style="color: green;">Test document added to localStorage!</p>';
+            console.log('Test document saved:', testDoc);
+        }
+
+        function checkLocalStorage() {
+            const data = localStorage.getItem('volunteerUploadedPattas');
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(JSON.parse(data || '[]'), null, 2) + '</pre>';
+            console.log('localStorage contents:', data);
+        }
+    </script>
+</body>
+</html>

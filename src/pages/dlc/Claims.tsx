@@ -13,7 +13,10 @@ import {
   Search,
   Filter,
   RefreshCw,
-  FileText
+  FileText,
+  X,
+  Zap,
+  Database
 } from 'lucide-react';
 import { Claim } from '../../types';
 import { dlcAPI } from '../../utils/api';
@@ -29,6 +32,10 @@ const DLCClaims: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [showDigitalizeModal, setShowDigitalizeModal] = useState(false);
+  const [approvalNotes, setApprovalNotes] = useState('');
+  const [digitalizedData, setDigitalizedData] = useState<any>(null);
 
   useEffect(() => {
     loadClaims();
@@ -102,6 +109,100 @@ const DLCClaims: React.FC = () => {
       loadClaims(0);
     } catch (error) {
       console.error('Error making final decision:', error);
+    }
+  };
+
+  const handleApproveClaim = async (claimId: string) => {
+    try {
+      console.log(`Approving claim ${claimId} with notes: ${approvalNotes}`);
+      
+      // Update the claim status
+      const updatedClaims = claims.map(claim => {
+        if (claim.id === claimId) {
+          return {
+            ...claim,
+            status: 'Approved',
+            statuses: {
+              ...claim.statuses,
+              dlc: {
+                review: true,
+                remarks: [...(claim.statuses.dlc?.remarks || []), `Approved by DLC: ${approvalNotes}`]
+              }
+            }
+          };
+        }
+        return claim;
+      });
+      
+      setClaims(updatedClaims);
+      setShowApprovalModal(false);
+      setApprovalNotes('');
+      setSelectedClaim(null);
+      
+      alert('Claim approved successfully!');
+    } catch (error) {
+      console.error('Error approving claim:', error);
+      alert('Error approving claim. Please try again.');
+    }
+  };
+
+  const handleDigitalizeClaim = async (claimId: string) => {
+    try {
+      console.log(`Digitalizing claim ${claimId}`);
+      
+      // Simulate digitalization process
+      const mockDigitalizedData = {
+        claimId: claimId,
+        digitalizedAt: new Date(),
+        extractedData: {
+          beneficiaryName: selectedClaim?.applicantName || 'Unknown',
+          aadhaarNumber: selectedClaim?.personal_info?.aadhaar || 'Unknown',
+          village: selectedClaim?.admin_info?.village || 'Unknown',
+          claimArea: selectedClaim?.title_info?.claim_area_hectares || 0,
+          rightType: selectedClaim?.title_info?.right_type || 'Unknown',
+          coordinates: selectedClaim?.coordinates || [0, 0],
+          forestArea: selectedClaim?.admin_info?.forest_area_hectares || 0,
+          tribalCommunity: selectedClaim?.personal_info?.tribal_community || 'Unknown',
+          income: selectedClaim?.personal_info?.income || 0
+        },
+        metadata: {
+          sourceDocuments: selectedClaim?.evidence || [],
+          verificationStatus: 'Verified',
+          digitalizationMethod: 'AI-Enhanced OCR',
+          confidenceScore: 95.5,
+          processingTime: '2.3 seconds'
+        },
+        blockchainHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        digitalSignature: `DIG_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      setDigitalizedData(mockDigitalizedData);
+      setShowDigitalizeModal(true);
+      
+      // Update claim status
+      const updatedClaims = claims.map(claim => {
+        if (claim.id === claimId) {
+          return {
+            ...claim,
+            status: 'Digitalized',
+            statuses: {
+              ...claim.statuses,
+              dlc: {
+                review: true,
+                remarks: [...(claim.statuses.dlc?.remarks || []), `Digitalized and approved by DLC`]
+              }
+            },
+            digitalizedData: mockDigitalizedData
+          };
+        }
+        return claim;
+      });
+      
+      setClaims(updatedClaims);
+      
+    } catch (error) {
+      console.error('Error digitalizing claim:', error);
+      alert('Error digitalizing claim. Please try again.');
     }
   };
 
@@ -519,19 +620,20 @@ const DLCClaims: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleFinalDecision(selectedClaim.id, 'approve', '')}
+                      onClick={() => setShowApprovalModal(true)}
                       className="flex-1 flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
                       <Check className="w-5 h-5" />
-                      <span>Approve Claim</span>
+                      <span>Approve</span>
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleFinalDecision(selectedClaim.id, 'reject', '')}
-                      className="flex-1 flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                      onClick={() => handleDigitalizeClaim(selectedClaim.id)}
+                      className="flex-1 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
-                      <span>Reject Claim</span>
+                      <Zap className="w-5 h-5" />
+                      <span>Digitalize</span>
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -545,6 +647,186 @@ const DLCClaims: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Approval Modal */}
+        {showApprovalModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md"
+            >
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Approve Claim
+              </h3>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Approval Notes
+                </label>
+                <textarea
+                  value={approvalNotes}
+                  onChange={(e) => setApprovalNotes(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Add approval notes..."
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => {
+                    setShowApprovalModal(false);
+                    setApprovalNotes('');
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => selectedClaim && handleApproveClaim(selectedClaim.id)}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Approve Claim
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Digitalization Modal */}
+        {showDigitalizeModal && digitalizedData && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Digitalized Claim Data
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowDigitalizeModal(false);
+                    setDigitalizedData(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Digitalization Status */}
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Zap className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-lg font-semibold text-green-800 dark:text-green-300">Digitalization Complete</span>
+                  </div>
+                  <p className="text-green-700 dark:text-green-400">
+                    Claim has been successfully digitalized and approved by DLC
+                  </p>
+                </div>
+
+                {/* Extracted Data */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-300">Extracted Data</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Beneficiary Name:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.beneficiaryName}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Aadhaar Number:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.aadhaarNumber}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Village:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.village}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Claim Area:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.claimArea} hectares</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Right Type:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.rightType}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Tribal Community:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.extractedData.tribalCommunity}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metadata */}
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <h4 className="text-lg font-semibold text-purple-800 dark:text-purple-300">Digitalization Metadata</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Method:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.metadata.digitalizationMethod}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Confidence Score:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.metadata.confidenceScore}%</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Processing Time:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.metadata.processingTime}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Verification Status:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.metadata.verificationStatus}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Blockchain Information */}
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Shield className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-300">Blockchain & Security</h4>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Blockchain Hash:</span>
+                      <p className="text-gray-900 dark:text-white font-mono text-xs break-all">{digitalizedData.blockchainHash}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Digital Signature:</span>
+                      <p className="text-gray-900 dark:text-white font-mono text-xs">{digitalizedData.digitalSignature}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Digitalized At:</span>
+                      <p className="text-gray-900 dark:text-white">{digitalizedData.digitalizedAt.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      setShowDigitalizeModal(false);
+                      setDigitalizedData(null);
+                    }}
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
       </div>

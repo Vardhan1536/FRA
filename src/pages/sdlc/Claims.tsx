@@ -12,7 +12,9 @@ import {
   AlertCircle,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Forward,
+  X
 } from 'lucide-react';
 import { Claim } from '../../types';
 import { sdlcAPI } from '../../utils/api';
@@ -28,6 +30,8 @@ const SDLCClaims: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [showForwardModal, setShowForwardModal] = useState(false);
+  const [forwardNotes, setForwardNotes] = useState('');
 
   useEffect(() => {
     loadClaims();
@@ -99,6 +103,44 @@ const SDLCClaims: React.FC = () => {
       alert(`Eligibility check initiated for claim: ${claimId}`);
     } catch (error) {
       console.error('Error checking eligibility:', error);
+    }
+  };
+
+  const handleForwardToDLC = async (claimId: string) => {
+    try {
+      console.log(`Forwarding claim ${claimId} to DLC with notes: ${forwardNotes}`);
+      
+      // Update the claim status
+      const updatedClaims = claims.map(claim => {
+        if (claim.id === claimId) {
+          return {
+            ...claim,
+            status: 'Forwarded to DLC',
+            statuses: {
+              ...claim.statuses,
+              sdlc: {
+                review: true,
+                remarks: [...(claim.statuses.sdlc?.remarks || []), `Forwarded to DLC: ${forwardNotes}`]
+              },
+              dlc: {
+                review: false,
+                remarks: []
+              }
+            }
+          };
+        }
+        return claim;
+      });
+      
+      setClaims(updatedClaims);
+      setShowForwardModal(false);
+      setForwardNotes('');
+      setSelectedClaim(null);
+      
+      alert('Claim forwarded to DLC successfully!');
+    } catch (error) {
+      console.error('Error forwarding claim to DLC:', error);
+      alert('Error forwarding claim to DLC. Please try again.');
     }
   };
 
@@ -496,6 +538,15 @@ const SDLCClaims: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowForwardModal(true)}
+                      className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    >
+                      <Forward className="w-5 h-5" />
+                      <span>Forward to DLC</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedClaim(null)}
                       className="flex-1 flex items-center justify-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
@@ -505,6 +556,52 @@ const SDLCClaims: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Forward Modal */}
+        {showForwardModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md"
+            >
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Forward to DLC
+              </h3>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Forward Notes
+                </label>
+                <textarea
+                  value={forwardNotes}
+                  onChange={(e) => setForwardNotes(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Add notes for forwarding to DLC..."
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => {
+                    setShowForwardModal(false);
+                    setForwardNotes('');
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => selectedClaim && handleForwardToDLC(selectedClaim.id)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Forward to DLC
+                </button>
+              </div>
+            </motion.div>
           </div>
         )}
       </div>
