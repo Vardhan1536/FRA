@@ -80,6 +80,7 @@ const CheckPatta: React.FC = () => {
       fileName: 'patta_ram_singh.pdf',
       fileSize: 2457600,
       fileType: 'application/pdf',
+      thumbnail: '/images.png',
       volunteerName: 'अनिल कुमार',
       notes: 'Original patta document from 1985',
       coordinates: {
@@ -98,7 +99,7 @@ const CheckPatta: React.FC = () => {
       fileName: 'land_deed_sita_devi.jpg',
       fileSize: 1873408,
       fileType: 'image/jpeg',
-      thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3YzkyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+PC9zdmc+',
+      thumbnail: '/images2.jpeg',
       volunteerName: 'प्रिया शर्मा',
       notes: 'Land deed from 1992, good condition',
       coordinates: {
@@ -117,7 +118,7 @@ const CheckPatta: React.FC = () => {
       fileName: 'id_proof_mohan_lal.png',
       fileSize: 1234567,
       fileType: 'image/png',
-      thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3YzkyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+PC9zdmc+',
+      thumbnail: '/images3.jpeg',
       volunteerName: 'राजेश यादव',
       notes: 'Aadhaar card verification completed',
       coordinates: {
@@ -139,6 +140,7 @@ const CheckPatta: React.FC = () => {
       fileName: 'community_consent_kavita_bai.pdf',
       fileSize: 987654,
       fileType: 'application/pdf',
+      thumbnail: '/images4.jpeg',
       volunteerName: 'सुनीता पटेल',
       notes: 'Community forest rights document',
       coordinates: {
@@ -161,23 +163,17 @@ const CheckPatta: React.FC = () => {
       // Load documents from localStorage (uploaded by volunteers)
       const volunteerUploads = JSON.parse(localStorage.getItem('volunteerUploadedPattas') || '[]');
       
-      // Convert date strings back to Date objects
-      const processedUploads = volunteerUploads.map((doc: any) => ({
+      // Convert date strings back to Date objects and add default thumbnails
+      const processedUploads = volunteerUploads.map((doc: any, index: number) => ({
         ...doc,
         uploadDate: new Date(doc.uploadDate || new Date()),
-        verifiedAt: doc.verifiedAt ? new Date(doc.verifiedAt) : undefined
+        verifiedAt: doc.verifiedAt ? new Date(doc.verifiedAt) : undefined,
+        // Add default thumbnail from our images (cycling through them)
+        thumbnail: doc.thumbnail || `/images${(index % 4) + 1}${index % 4 === 0 ? '.png' : '.jpeg'}`
       }));
       
-      // Load digitalized documents for viewing
-      const digitalizedDocuments = JSON.parse(localStorage.getItem('digitalizedPattaDocuments') || '[]');
-      const processedDigitalized = digitalizedDocuments.map((doc: any) => ({
-        ...doc,
-        uploadDate: new Date(doc.uploadDate || new Date()),
-        verifiedAt: doc.verifiedAt ? new Date(doc.verifiedAt) : undefined
-      }));
-      
-      // Combine with mock data for demonstration
-      const allDocuments = [...processedUploads, ...mockPattaDocuments, ...processedDigitalized];
+      // Show only mock data + volunteer uploads (no digitalized documents)
+      const allDocuments = [...processedUploads, ...mockPattaDocuments];
       
       setPattaDocuments(allDocuments);
     } catch (error) {

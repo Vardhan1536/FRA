@@ -103,7 +103,7 @@ const DLCCheckPatta: React.FC = () => {
       fileName: 'land_deed_sita_devi.jpg',
       fileSize: 1873408,
       fileType: 'image/jpeg',
-      thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3YzkyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+PC9zdmc+',
+      thumbnail: '/images3.jpeg',
       volunteerName: 'प्रिया शर्मा',
       notes: 'Land deed from 1992, good condition',
       coordinates: {
@@ -156,7 +156,7 @@ const DLCCheckPatta: React.FC = () => {
       fileName: 'id_proof_mohan_lal.png',
       fileSize: 1234567,
       fileType: 'image/png',
-      thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3YzkyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+PC9zdmc+',
+      thumbnail: '/images4.jpeg',
       volunteerName: 'राजेश यादव',
       notes: 'Aadhaar card verification completed',
       coordinates: {
@@ -238,24 +238,18 @@ const DLCCheckPatta: React.FC = () => {
       // Load documents from localStorage (forwarded from SDLC)
       const dlcDocuments = JSON.parse(localStorage.getItem('dlcPattaDocuments') || '[]');
       
-      // Convert date strings back to Date objects
-      const processedDocuments = dlcDocuments.map((doc: any) => ({
+      // Convert date strings back to Date objects and add default thumbnails
+      const processedDocuments = dlcDocuments.map((doc: any, index: number) => ({
         ...doc,
         uploadDate: new Date(doc.uploadDate),
         verifiedAt: doc.verifiedAt ? new Date(doc.verifiedAt) : undefined,
-        sdlcVerifiedAt: doc.sdlcVerifiedAt ? new Date(doc.sdlcVerifiedAt) : undefined
+        sdlcVerifiedAt: doc.sdlcVerifiedAt ? new Date(doc.sdlcVerifiedAt) : undefined,
+        // Add default thumbnail from our images (cycling through them)
+        thumbnail: doc.thumbnail || `/images${(index % 4) + 1}${index % 4 === 0 ? '.png' : '.jpeg'}`
       }));
       
-      // Load digitalized documents for viewing
-      const digitalizedDocuments = JSON.parse(localStorage.getItem('digitalizedPattaDocuments') || '[]');
-      const processedDigitalized = digitalizedDocuments.map((doc: any) => ({
-        ...doc,
-        uploadDate: new Date(doc.uploadDate),
-        verifiedAt: doc.verifiedAt ? new Date(doc.verifiedAt) : undefined
-      }));
-      
-      // Combine with mock data for demonstration
-      const allDocuments = [...processedDocuments, ...mockPattaDocuments, ...processedDigitalized];
+      // Show only mock data + DLC documents (no digitalized documents)
+      const allDocuments = [...processedDocuments, ...mockPattaDocuments];
       
       console.log('Loading patta documents for DLC role:', allDocuments.length);
       setPattaDocuments(allDocuments);

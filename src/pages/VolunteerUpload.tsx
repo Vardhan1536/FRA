@@ -61,6 +61,11 @@ const VolunteerUpload: React.FC = () => {
     setIsUploading(true);
 
     try {
+      // Get existing documents count to cycle through thumbnails
+      const existingDocuments = JSON.parse(localStorage.getItem('volunteerUploadedPattas') || '[]');
+      const thumbnailIndex = existingDocuments.length % 4;
+      const thumbnailPath = `/images${thumbnailIndex + 1}${thumbnailIndex === 0 ? '.png' : '.jpeg'}`;
+
       // Create new patta document entry
       const newPattaDocument = {
         id: `PATA_${Date.now()}`,
@@ -73,6 +78,7 @@ const VolunteerUpload: React.FC = () => {
         fileName: uploadedFiles[0]?.name || "uploaded_document.jpg",
         fileSize: uploadedFiles[0]?.size || 1024000,
         fileType: uploadedFiles[0]?.type || "image/jpeg",
+        thumbnail: thumbnailPath,
         volunteerName: "Volunteer User",
         notes: formData.notes,
         coordinates: {
@@ -84,7 +90,6 @@ const VolunteerUpload: React.FC = () => {
       };
 
       // Save to localStorage for GramaSabha to access
-      const existingDocuments = JSON.parse(localStorage.getItem('volunteerUploadedPattas') || '[]');
       existingDocuments.unshift(newPattaDocument);
       localStorage.setItem('volunteerUploadedPattas', JSON.stringify(existingDocuments));
 
