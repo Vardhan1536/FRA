@@ -1,3 +1,4 @@
+
 import json
 import os
 import time
@@ -72,17 +73,14 @@ Other Regulations:
 """
         self.model = model
 
-    def provide_legal_assistance(self, data):
+    def provide_legal_assistance(self, query):
         """
-        Provides legal assistance for FRA-related issues based on provided data.
-        :param data: dict containing beneficiary information, claim details, and issue description
+        Provides legal assistance for FRA-related issues based on provided query.
+        :param query: string describing the issue or question
         :return: dict in the format {"issue_description": string, "tips": [list of tips], "relevant_sections": [list of sections/rules]}
         """
-        # Mask sensitive data (e.g., Aadhaar)
-        data_copy = json.loads(json.dumps(data))
-        if "personal_info" in data_copy and "aadhaar" in data_copy["personal_info"]:
-            data_copy["personal_info"]["aadhaar"] = "XXXX-XXXX-XXXX"
-        details_str = json.dumps(data_copy, ensure_ascii=False, indent=2)
+        # No need for masking since input is query string
+        query_str = query
 
         # Construct prompt
         prompt = f"""
@@ -92,16 +90,16 @@ Here are the key rules and regulations for FRA, including eligibility, processes
 
 {self.rules_text}
 
-Based on the provided details and issue description, analyze the legal issue, classify its type, and provide actionable tips for resolution.
+Based on the provided query, analyze the legal issue, classify its type, and provide actionable tips for resolution.
 
-Input details (including beneficiary info, claim details, and issue description): {details_str}
+Input query: {query_str}
 
 **Instructions**:
 - Identify the type of legal issue (e.g., eligibility dispute, conflict over land, fraudulent claim, procedural error, eviction issue).
 - Provide a concise, straightforward description of the issue type (1-2 sentences), focusing on the core problem and its relevance to FRA.
-- Suggest up to 7 short, actionable tips to resolve the issue, each as a concise sentence referencing relevant FRA sections or rules if applicable.
+- Suggest 2-3 short, actionable tips to resolve the issue, each as a concise sentence referencing relevant FRA sections or rules if applicable.
 - List relevant FRA sections or 2012 Rules that apply to the issue.
-- Output **ONLY** a valid JSON object in this exact format: {{"issue_description": "string describing the issue type and details", "tips": [array of max 7 short sentences with actionable advice], "relevant_sections": [array of relevant section or rule numbers]}}
+- Output **ONLY** a valid JSON object in this exact format: {{"issue_description": "string describing the issue type and details", "tips": [array of 2-3 short sentences with actionable advice], "relevant_sections": [array of relevant section or rule numbers]}}
 - Do **not** include any additional text, explanations, or comments outside the JSON object.
 - Do **not** wrap the JSON in Markdown code blocks (e.g., ```json ... ```).
 - Ignore sensitive data (e.g., Aadhaar numbers) but do not fail the request.
@@ -131,50 +129,10 @@ Input details (including beneficiary info, claim details, and issue description)
                     continue
                 raise ValueError("Invalid JSON response from Gemini after retries")
 
-# Example usage
+# # Example usage
 # if __name__ == "__main__":
-#     data = {
-#         "beneficiary_id": "FRA_00000020",
-#         "title_id": "FRA_TITLE_00000014",
-#         "personal_info": {
-#             "first_name": "आदित्य",
-#             "last_name": "जैन",
-#             "gender": "Male",
-#             "tribal_community": "Baiga",
-#             "aadhaar": "1011-6435-4300",
-#             "income": 43679
-#         },
-#         "title_info": {
-#             "right_type": "IFR",
-#             "status": "Approved",
-#             "claim_area_hectares": 1.38,
-#             "polygon_coordinates": [
-#                 [
-#                     [80.54635212060894, 22.79320098273347],
-#                     [80.54602495210914, 22.793732930673524],
-#                     [80.54504098599959, 22.793350670018256],
-#                     [80.54396184629934, 22.793092738078585],
-#                     [80.54531552764372, 22.79101500280458],
-#                     [80.54601006158536, 22.791188448636703],
-#                     [80.54635212060894, 22.79320098273347]
-#                 ]
-#             ]
-#         },
-#         "admin_info": {
-#             "village": "पाकाला",
-#             "gp": "GP_फतेहपुर",
-#             "block": "Mandla",
-#             "district": "Mandla",
-#             "state": "Madhya Pradesh",
-#             "forest_area_hectares": 111.91888777522814
-#         },
-#         "evidence": [
-#             {"type": "government_record", "description": "Land occupancy record from 2004"},
-#             {"type": "elder_statement", "description": "Statement from village elder confirming residence since 1990"}
-#         ],
-#         "issue_description": "The claimant's approved IFR title is contested by another villager claiming overlapping land, leading to a dispute at the Gram Sabha."
-#     }
+#     query = "The claimant's approved IFR title is contested by another villager claiming overlapping land, leading to a dispute at the Gram Sabha."
 
 #     agent = LegalAssistanceAgent()
-#     result = agent.provide_legal_assistance(data)
+#     result = agent.provide_legal_assistance(query)
 #     print(json.dumps(result, indent=2))

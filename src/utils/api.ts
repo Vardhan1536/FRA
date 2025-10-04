@@ -1277,10 +1277,8 @@ export const legalAssistanceAPI = {
     try {
       console.log(`Getting legal assistance for query: ${query}, role: ${role}`);
       
-      const response = await axios.post('http://127.0.0.1:8000/legal-assistance', {
-        query: query,
-        role: role
-      }, {
+      const response = await axios.post('http://127.0.0.1:8000/legal-assistance', 
+        JSON.stringify({ query: query }), {
         headers: {
           'Content-Type': 'application/json',
         },

@@ -9,6 +9,8 @@ from eligibility_check_agent import EligibilityAgent
 from dataloader import load_data
 from scheme_eligibility import SchemeEligibilityAgent 
 from resource_suggestion import ResourceSuggestionAgent
+from legal_assistance_agent import LegalAssistanceAgent
+from pydantic import BaseModel
 app = FastAPI()
 
 # Enable CORS
@@ -20,6 +22,8 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+class QueryInput(BaseModel):
+    query: str
 
 GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 
@@ -75,6 +79,9 @@ def startup():
             GLOBAL_RESOURCE_SUGGESTIONS[village_id] = result
         except Exception as e:
             print(f"Error precomputing resource suggestions for village {village_id}: {str(e)}")
+            
+    global legal_agent
+    legal_agent = LegalAssistanceAgent(model)
 
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
@@ -185,6 +192,11 @@ async def suggest_resources(role: str = None):
         raise HTTPException(status_code=404, detail="No resource suggestions found for this role")
     
     return results
+
+@app.post("/legal-assistance")
+async def legal_assistance(input: QueryInput):
+    result = legal_agent.provide_legal_assistance(input.query)
+    return result
 
 if __name__ == "__main__":
     import uvicorn
