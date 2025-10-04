@@ -56,9 +56,40 @@ const LegalAssistanceModal: React.FC<LegalAssistanceModalProps> = ({ isOpen, onC
       const role = currentUser?.role || 'GramaSabha';
       const response = await legalAssistanceAPI.getLegalAssistance(inputText.trim(), role);
       
+      console.log('Raw API response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is object:', typeof response === 'object');
+      console.log('Is null:', response === null);
+      console.log('Is array:', Array.isArray(response));
+      
+      // Handle structured response from API
+      let formattedResponse = response;
+      console.log('Response before processing:', response);
+      
+      // Test with hardcoded data first
+      if (inputText.trim().toLowerCase().includes('test')) {
+        const testResponse = {
+          issue_description: "This is a test response to verify the formatting works correctly.",
+          relevant_sections: ["Section 6", "Rule 12A(3)"],
+          tips: ["This is tip 1", "This is tip 2", "This is tip 3"]
+        };
+        formattedResponse = formatLegalResponse(testResponse);
+        console.log('Using test response:', formattedResponse);
+      } else if (typeof response === 'object' && response !== null && !Array.isArray(response)) {
+        console.log('Formatting as object response');
+        formattedResponse = formatLegalResponse(response);
+        console.log('Formatted response:', formattedResponse);
+      } else if (typeof response === 'string') {
+        console.log('Using string response as is');
+        formattedResponse = response;
+      } else {
+        console.log('Unknown response type, using as is');
+        formattedResponse = String(response);
+      }
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response,
+        text: formattedResponse,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -87,6 +118,52 @@ const LegalAssistanceModal: React.FC<LegalAssistanceModalProps> = ({ isOpen, onC
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatLegalResponse = (response: any): string => {
+    console.log('formatLegalResponse called with:', response);
+    console.log('Response keys:', Object.keys(response || {}));
+    
+    let formatted = '';
+    
+    // Add issue description
+    if (response && response.issue_description) {
+      console.log('Adding issue description:', response.issue_description);
+      formatted += `📋 **Issue Description:**\n${response.issue_description}\n\n`;
+    }
+    
+    // Add relevant sections
+    if (response && response.relevant_sections && Array.isArray(response.relevant_sections) && response.relevant_sections.length > 0) {
+      console.log('Adding relevant sections:', response.relevant_sections);
+      formatted += `📖 **Relevant Sections:**\n`;
+      response.relevant_sections.forEach((section: string, index: number) => {
+        formatted += `${index + 1}. ${section}\n`;
+      });
+      formatted += '\n';
+    }
+    
+    // Add tips
+    if (response && response.tips && Array.isArray(response.tips) && response.tips.length > 0) {
+      console.log('Adding tips:', response.tips);
+      formatted += `💡 **Guidance & Tips:**\n`;
+      response.tips.forEach((tip: string, index: number) => {
+        formatted += `${index + 1}. ${tip}\n`;
+      });
+    }
+    
+    console.log('Formatted result:', formatted);
+    
+    // If no structured data found, try to display the raw response
+    if (!formatted) {
+      console.log('No structured data found, using raw response');
+      if (typeof response === 'string') {
+        formatted = response;
+      } else {
+        formatted = JSON.stringify(response, null, 2);
+      }
+    }
+    
+    return formatted || 'Legal assistance response received.';
   };
 
   if (!isOpen) return null;
@@ -156,7 +233,17 @@ const LegalAssistanceModal: React.FC<LegalAssistanceModalProps> = ({ isOpen, onC
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}>
-                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                    <div className="text-sm whitespace-pre-wrap">
+                      {message.sender === 'bot' ? (
+                        <div dangerouslySetInnerHTML={{ 
+                          __html: message.text
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\n/g, '<br/>')
+                        }} />
+                      ) : (
+                        <p>{message.text}</p>
+                      )}
+                    </div>
                     <p className={`text-xs mt-1 ${
                       message.sender === 'user' 
                         ? 'text-blue-100' 

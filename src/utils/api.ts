@@ -1250,7 +1250,7 @@ export const alertsAPI = {
 };
 
 export const legalAssistanceAPI = {
-  getLegalAssistance: async (query: string, role: string): Promise<string> => {
+  getLegalAssistance: async (query: string, role: string): Promise<any> => {
     const cacheKey = `legal_assistance_${role}_${btoa(query)}`;
     const maxCacheAge = 60 * 60 * 1000; // 1 hour cache for legal assistance
     
@@ -1287,11 +1287,12 @@ export const legalAssistanceAPI = {
 
       console.log('Legal assistance API response:', response.data);
       
-      const responseText = response.data.response || response.data.message || 'Legal assistance response received';
+      // Return the full response object to handle structured responses
+      const responseData = response.data;
       
       // Cache the response
       const cacheData = {
-        response: responseText,
+        response: responseData,
         query: query,
         role: role,
         timestamp: Date.now()
@@ -1299,7 +1300,7 @@ export const legalAssistanceAPI = {
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
       console.log(`Cached legal assistance response for ${maxCacheAge / 1000 / 60} minutes`);
       
-      return responseText;
+      return responseData;
     } catch (error) {
       console.error('Error getting legal assistance:', error);
       
