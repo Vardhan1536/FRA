@@ -23,6 +23,7 @@ import SDLCAlerts from './pages/sdlc/Alerts';
 import SDLCSettings from './pages/sdlc/Settings';
 // DLC pages
 import DLCDashboard from './pages/dlc/Dashboard';
+import DLCMap from './pages/dlc/Map';
 import DLCClaims from './pages/dlc/Claims';
 import DLCCheckPatta from './pages/dlc/CheckPatta';
 import DLCSchemes from './pages/dlc/Schemes';
@@ -122,6 +123,7 @@ const AppContent: React.FC = () => {
            
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DLCDashboard />} />
+          <Route path="map" element={<DLCMap />} />
           <Route path="claims" element={<DLCClaims />} />
           <Route path="check-patta" element={<DLCCheckPatta />} />
           <Route path="schemes" element={<DLCSchemes />} />

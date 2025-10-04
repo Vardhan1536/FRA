@@ -47,6 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     } else if (currentUser?.role === 'DLC') {
       return [
         { path: '/dlc/dashboard', icon: Home, label: 'DLC Dashboard' },
+        { path: '/dlc/map', icon: Map, label: 'Interactive Maps' },
         { path: '/dlc/claims', icon: FileText, label: t('claims') },
         { path: '/dlc/check-patta', icon: FileCheck, label: 'Check Patta' },
         { path: '/dlc/schemes', icon: Building, label: 'Schemes' },
