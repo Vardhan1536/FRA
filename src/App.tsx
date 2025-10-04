@@ -23,6 +23,7 @@ import DLCSchemes from './pages/dlc/Schemes';
 import DLCAlerts from './pages/dlc/Alerts';
 import DLCSettings from './pages/dlc/Settings';
 import './i18n';
+import Map from './pages/Map.tsx';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -105,6 +106,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } 
         >
+           <Route path="/Map" element={<Map />} />
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DLCDashboard />} />
           <Route path="claims" element={<DLCClaims />} />

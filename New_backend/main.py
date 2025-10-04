@@ -26,7 +26,7 @@ GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 @app.on_event("startup")
 def startup():
     initialize_demo_data()
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyCAWPWdlnOYK-qONocy8MnO-WqGaE2r6eQ"))
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "AIzaSyCJgcGG27PK7FpBdICExEtm6lYyE74-Rns"))
     model = genai.GenerativeModel('gemini-2.5-flash')
     agent = EligibilityAgent(model)
     
