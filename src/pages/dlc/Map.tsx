@@ -22,7 +22,7 @@ const Map: React.FC = () => {
       description: 'Village icons and land cover visualization',
       icon: Layers,
       color: 'emerald',
-      file: '/mandla_villages_icons_map.html'
+      file: '/mandla_landcover_interactive_map.html'
     },
     demographics: {
       title: 'Demographics Map',
@@ -36,7 +36,7 @@ const Map: React.FC = () => {
       description: 'FRA beneficiaries and claims distribution',
       icon: FileText,
       color: 'purple',
-      file: '/fra_all_beneficiaries_map.html'
+      file: '/fra_non_overlapping_claims_map.html'
     }
   };
 

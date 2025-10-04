@@ -388,7 +388,7 @@ const Dashboard: React.FC = () => {
           
             
           <iframe
-  src="/mandla_landcover_interactive_map.html"
+  src="/mandla_landcover_interactive_map (1).html"
   title="Landcover Interactive Map"
   className="w-full aspect-video rounded-xl border border-cyan-400/20 bg-white"
 />
