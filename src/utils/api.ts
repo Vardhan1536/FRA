@@ -1666,6 +1666,48 @@ export const schemeEligibilityAPI = {
   }
 };
 
+export const notificationsAPI = {
+  notifyEligibleBeneficiaries: async (schemeName: string, role: string): Promise<{ success: boolean; message: string; notifiedCount: number }> => {
+    try {
+      console.log(`Notifying eligible beneficiaries for scheme: ${schemeName}, role: ${role}`);
+      
+      const response = await axios.post('http://127.0.0.1:8000/notify-eligible-beneficiaries', {
+        scheme_name: schemeName,
+        role: role
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000, // 30 second timeout
+      });
+
+      console.log('Notify beneficiaries API response:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error notifying eligible beneficiaries:', error);
+      
+      // If API call fails, show user-friendly error message
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // Server responded with error status
+          const errorMessage = error.response.data?.message || error.response.data?.error || 'Server error occurred';
+          throw new Error(`API Error (${error.response.status}): ${errorMessage}`);
+        } else if (error.request) {
+          // Request was made but no response received
+          throw new Error('Unable to connect to the notification service. Please check your internet connection and try again.');
+        } else {
+          // Something else happened
+          throw new Error('An unexpected error occurred. Please try again.');
+        }
+      } else {
+        // Non-Axios error
+        throw new Error('An unexpected error occurred. Please try again.');
+      }
+    }
+  }
+};
+
 export const resourceSuggestionsAPI = {
   getResourceSuggestions: async (role: string, forceRefresh: boolean = false): Promise<ResourceSuggestionsResponse> => {
     const cacheKey = `resource_suggestions_${role}`;
