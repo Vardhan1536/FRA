@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-  Download,
   Eye,
   File,
   Building,
@@ -23,7 +21,6 @@ import { dlcAPI } from '../../utils/api';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 
 const DLCClaims: React.FC = () => {
-  const { t } = useTranslation();
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
@@ -34,6 +31,8 @@ const DLCClaims: React.FC = () => {
   const [isFromCache, setIsFromCache] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showDigitalizeModal, setShowDigitalizeModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedClaimForMap, setSelectedClaimForMap] = useState<Claim | null>(null);
   const [approvalNotes, setApprovalNotes] = useState('');
   const [digitalizedData, setDigitalizedData] = useState<any>(null);
 
@@ -121,12 +120,13 @@ const DLCClaims: React.FC = () => {
         if (claim.id === claimId) {
           return {
             ...claim,
-            status: 'Approved',
+            status: 'Approved' as const,
             statuses: {
               ...claim.statuses,
+              gramasabha: claim.statuses?.gramasabha || 'Pending',
               dlc: {
                 review: true,
-                remarks: [...(claim.statuses.dlc?.remarks || []), `Approved by DLC: ${approvalNotes}`]
+                remarks: [...(claim.statuses?.dlc?.remarks || []), `Approved by DLC: ${approvalNotes}`]
               }
             }
           };
@@ -184,12 +184,13 @@ const DLCClaims: React.FC = () => {
         if (claim.id === claimId) {
           return {
             ...claim,
-            status: 'Digitalized',
+            status: 'Approved' as const,
             statuses: {
               ...claim.statuses,
+              gramasabha: claim.statuses?.gramasabha || 'Pending',
               dlc: {
                 review: true,
-                remarks: [...(claim.statuses.dlc?.remarks || []), `Digitalized and approved by DLC`]
+                remarks: [...(claim.statuses?.dlc?.remarks || []), `Digitalized and approved by DLC`]
               }
             },
             digitalizedData: mockDigitalizedData
@@ -221,6 +222,27 @@ const DLCClaims: React.FC = () => {
     } catch (error) {
       console.error('Error exporting claims:', error);
     }
+  };
+
+  const handleMapView = (claim: Claim) => {
+    setSelectedClaimForMap(claim);
+    setShowMapModal(true);
+  };
+
+  const generateMapFilePath = (beneficiaryId: string) => {
+    // Generate map file path based on beneficiary ID
+    // This assumes the HTML files follow the pattern FRA_{beneficiaryId}_{applicantName}.html
+    const existingFiles = [
+      'FRA_00000007_राज_सरकार.html',
+      'FRA_00000018_श्यामल_यादव.html', 
+      'FRA_00000090_चण्ड_बुरुाह.html',
+      'FRA_00008930_सीमा_शुक्ला.html',
+      'FRA_00008981_सावित्री_झादव.html'
+    ];
+    
+    // Try to find a matching file based on beneficiary ID or use the first available one
+    const matchingFile = existingFiles.find(file => file.includes(beneficiaryId)) || existingFiles[0];
+    return `/${matchingFile}`;
   };
 
   const getStatusBadge = (status: string) => {
@@ -462,6 +484,15 @@ const DLCClaims: React.FC = () => {
                     >
                       <Eye className="w-4 h-4" />
                       <span>View Details</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleMapView(claim)}
+                      className="flex-1 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      <Map className="w-4 h-4" />
+                      <span>Map View</span>
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -824,6 +855,75 @@ const DLCClaims: React.FC = () => {
                   >
                     Close
                   </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Map View Modal */}
+        {showMapModal && selectedClaimForMap && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                    <Map className="w-6 h-6 mr-2 text-purple-600" />
+                    Asset Map - {selectedClaimForMap.applicantName}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {selectedClaimForMap.beneficiary_id ? 'Beneficiary ID' : 'Claim ID'}: {selectedClaimForMap.beneficiary_id || selectedClaimForMap.id} • Village: {selectedClaimForMap.village}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowMapModal(false);
+                    setSelectedClaimForMap(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="relative" style={{ height: '70vh', minHeight: '500px' }}>
+                <iframe
+                  src={generateMapFilePath(selectedClaimForMap.beneficiary_id || selectedClaimForMap.id)}
+                  title={`Asset Map for ${selectedClaimForMap.applicantName}`}
+                  className="w-full h-full border-0"
+                  style={{ 
+                    background: '#f8fafc'
+                  }}
+                  onLoad={() => {
+                    console.log(`Asset map loaded for ${selectedClaimForMap.beneficiary_id ? 'beneficiary' : 'claim'} ${selectedClaimForMap.beneficiary_id || selectedClaimForMap.id}`);
+                  }}
+                  onError={(e) => {
+                    console.error(`Failed to load asset map for ${selectedClaimForMap.beneficiary_id ? 'beneficiary' : 'claim'} ${selectedClaimForMap.beneficiary_id || selectedClaimForMap.id}:`, e);
+                  }}
+                />
+              </div>
+              
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center space-x-2">
+                      <Map className="w-4 h-4" />
+                      <span>Applicant Asset Map</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Building className="w-4 h-4" />
+                      <span>Claim Area: {selectedClaimForMap.area} hectares</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-500">
+                      Interactive Map View
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>
