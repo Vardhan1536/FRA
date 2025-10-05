@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_39fdabf99d66f3ea99aed1bf9f345189 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+</head>
+<body>
+    
+    
+        <div style="position: fixed;
+                    bottom: 50px; right: 50px; width: 250px;
+                    background-color: white; border:2px solid grey;
+                    z-index:9999; font-size:13px; padding: 12px;
+                    border-radius: 5px; box-shadow: 2px 2px 6px rgba(0,0,0,0.3);">
+            <h4 style="margin-top: 0; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 5px;">
+                राज सरकार
+            </h4>
+            <p style="margin: 5px 0; font-size: 11px;"><b>ID:</b> FRA_00000007</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Village:</b> चिरमिरी</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Assets:</b> 4</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Total Area:</b> 7.40 ha</p>
+            <hr style="margin: 8px 0;">
+            <h5 style="margin: 5px 0; text-align: center;">Asset Types</h5>
+        
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #808080; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Forest Patch: 2
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #8B008B; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Sacred Grove: 1
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #32CD32; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Grazing Land: 1
+            </p>
+            
+            <hr style="margin: 8px 0;">
+            <p style="margin: 6px 0; font-size: 11px;">
+                <span style="display: inline-block; width: 20px; height: 3px; background-color: #ff7800; border: 2px solid #ff7800;"></span> FRA Claim Boundary
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 10px; color: #666; text-align: center;">
+                Generated: 2025-10-04 08:03
+            </p>
+        </div>
+        
+    
+            <div class="folium-map" id="map_39fdabf99d66f3ea99aed1bf9f345189" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_39fdabf99d66f3ea99aed1bf9f345189 = L.map(
+                "map_39fdabf99d66f3ea99aed1bf9f345189",
+                {
+                    center: [22.2174155, 80.27538200000001],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 15,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_86e2414fb6c601ddde92bc4c4c20fa99 = L.tileLayer(
+                "https://mt1.google.com/vt/lyrs=s\u0026x={x}\u0026y={y}\u0026z={z}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_86e2414fb6c601ddde92bc4c4c20fa99.addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+            var tile_layer_e450d39f658b0398437baa452ad62293 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_e450d39f658b0398437baa452ad62293.addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+            var tile_layer_23fc762346866248712e45dd0467ebf0 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Esri",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_23fc762346866248712e45dd0467ebf0.addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+            var polygon_f4cb205101858a839ed5fabf372a4c86 = L.polygon(
+                [[22.213313, 80.26980400000001], [22.213313, 80.28096], [22.221518, 80.28096], [22.221518, 80.26980400000001], [22.213313, 80.26980400000001]],
+                {"bubblingMouseEvents": true, "color": "#ff7800", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#ff7800", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 2}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+            polygon_f4cb205101858a839ed5fabf372a4c86.bindTooltip(
+                `<div>
+                     FRA Claim (Approx): राज सरकार
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_526c2d90c76875c035d0dc5f15734d75 = L.circleMarker(
+                [22.219518, 80.274036],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+        var popup_49fa2b8de824d1bf5d8450993e9b1ecd = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_3792d316ffd443696c2c26b190a65f8e = $(`<div id="html_3792d316ffd443696c2c26b190a65f8e" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00000008</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>4.87 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.219518, 80.274036</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-08-05</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_49fa2b8de824d1bf5d8450993e9b1ecd.setContent(html_3792d316ffd443696c2c26b190a65f8e);
+            
+        
+
+        circle_marker_526c2d90c76875c035d0dc5f15734d75.bindPopup(popup_49fa2b8de824d1bf5d8450993e9b1ecd)
+        ;
+
+        
+    
+    
+            circle_marker_526c2d90c76875c035d0dc5f15734d75.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 4.87 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ef90f72c85c8d3cac9c7f5f20f9bab56 = L.circleMarker(
+                [22.217951, 80.273423],
+                {"bubblingMouseEvents": true, "color": "#8B008B", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#8B008B", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+        var popup_e5b3d1b4e3ed187d18abc7c778ea7388 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_4ea551a2f2a93dffc12e5f5cf5651b01 = $(`<div id="html_4ea551a2f2a93dffc12e5f5cf5651b01" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #8B008B;">📍 Sacred Grove</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00000009</td></tr>                     <tr><td><b>Type:</b></td><td>Sacred Grove</td></tr>                     <tr><td><b>Area:</b></td><td>0.75 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.217951, 80.273423</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-07-06</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_e5b3d1b4e3ed187d18abc7c778ea7388.setContent(html_4ea551a2f2a93dffc12e5f5cf5651b01);
+            
+        
+
+        circle_marker_ef90f72c85c8d3cac9c7f5f20f9bab56.bindPopup(popup_e5b3d1b4e3ed187d18abc7c778ea7388)
+        ;
+
+        
+    
+    
+            circle_marker_ef90f72c85c8d3cac9c7f5f20f9bab56.bindTooltip(
+                `<div>
+                     <b>Sacred Grove</b><br>Area: 0.75 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d403ddd5abbeb7738ced10351550156e = L.circleMarker(
+                [22.215313, 80.27896],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+        var popup_269fb7ef369e077443ee74dfb3287395 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_6852a1a3e38009d610febff7531288df = $(`<div id="html_6852a1a3e38009d610febff7531288df" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00000010</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>0.94 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.215313, 80.278960</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-04-14</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_269fb7ef369e077443ee74dfb3287395.setContent(html_6852a1a3e38009d610febff7531288df);
+            
+        
+
+        circle_marker_d403ddd5abbeb7738ced10351550156e.bindPopup(popup_269fb7ef369e077443ee74dfb3287395)
+        ;
+
+        
+    
+    
+            circle_marker_d403ddd5abbeb7738ced10351550156e.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 0.94 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d379268b3e1f11201ca5f1dbd17ede90 = L.circleMarker(
+                [22.218122, 80.271804],
+                {"bubblingMouseEvents": true, "color": "#32CD32", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#32CD32", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+        var popup_b85a987e841111aa7dedf793f9f7bb38 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_1b00ef609966e434dc1d8dc3638a62d9 = $(`<div id="html_1b00ef609966e434dc1d8dc3638a62d9" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #32CD32;">📍 Grazing Land</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00000011</td></tr>                     <tr><td><b>Type:</b></td><td>Grazing Land</td></tr>                     <tr><td><b>Area:</b></td><td>0.84 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.218122, 80.271804</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-10-26</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_b85a987e841111aa7dedf793f9f7bb38.setContent(html_1b00ef609966e434dc1d8dc3638a62d9);
+            
+        
+
+        circle_marker_d379268b3e1f11201ca5f1dbd17ede90.bindPopup(popup_b85a987e841111aa7dedf793f9f7bb38)
+        ;
+
+        
+    
+    
+            circle_marker_d379268b3e1f11201ca5f1dbd17ede90.bindTooltip(
+                `<div>
+                     <b>Grazing Land</b><br>Area: 0.84 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var measure_control_22f2220f7b2c94ea0a19df3ef39906ec = new L.Control.Measure(
+                {
+  "position": "topleft",
+  "primaryLengthUnit": "meters",
+  "secondaryLengthUnit": "kilometers",
+  "primaryAreaUnit": "hectares",
+  "secondaryAreaUnit": "sqmeters",
+});
+            map_39fdabf99d66f3ea99aed1bf9f345189.addControl(measure_control_22f2220f7b2c94ea0a19df3ef39906ec);
+
+            // Workaround for using this plugin with Leaflet>=1.8.0
+            // https://github.com/ljagis/leaflet-measure/issues/171
+            L.Control.Measure.include({
+                _setCaptureMarkerIcon: function () {
+                    // disable autopan
+                    this._captureMarker.options.autoPanOnFocus = false;
+                    // default function
+                    this._captureMarker.setIcon(
+                        L.divIcon({
+                            iconSize: this._map.getSize().multiplyBy(2)
+                        })
+                    );
+                },
+            });
+
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topright",
+  "title": "Fullscreen",
+  "titleCancel": "Exit Fullscreen",
+  "forceSeparateButton": true,
+}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+        
+    
+            var layer_control_95741afaafa88dbc7733cea1d6b8df7d_layers = {
+                base_layers : {
+                    "Google Satellite" : tile_layer_86e2414fb6c601ddde92bc4c4c20fa99,
+                    "Street Map" : tile_layer_e450d39f658b0398437baa452ad62293,
+                    "Esri Satellite" : tile_layer_23fc762346866248712e45dd0467ebf0,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_95741afaafa88dbc7733cea1d6b8df7d = L.control.layers(
+                layer_control_95741afaafa88dbc7733cea1d6b8df7d_layers.base_layers,
+                layer_control_95741afaafa88dbc7733cea1d6b8df7d_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_39fdabf99d66f3ea99aed1bf9f345189);
+
+        
+</script>
+</html>

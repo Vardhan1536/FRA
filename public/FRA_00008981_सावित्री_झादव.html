@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_6ceffe072d72c82ead065215061e5188 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+</head>
+<body>
+    
+    
+        <div style="position: fixed;
+                    bottom: 50px; right: 50px; width: 250px;
+                    background-color: white; border:2px solid grey;
+                    z-index:9999; font-size:13px; padding: 12px;
+                    border-radius: 5px; box-shadow: 2px 2px 6px rgba(0,0,0,0.3);">
+            <h4 style="margin-top: 0; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 5px;">
+                सावित्री झादव
+            </h4>
+            <p style="margin: 5px 0; font-size: 11px;"><b>ID:</b> FRA_00008981</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Village:</b> अन्तर्गत</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Assets:</b> 15</p>
+            <p style="margin: 5px 0; font-size: 11px;"><b>Total Area:</b> 29.46 ha</p>
+            <hr style="margin: 8px 0;">
+            <h5 style="margin: 5px 0; text-align: center;">Asset Types</h5>
+        
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #808080; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Forest Patch: 7
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #FFD700; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Agricultural Plot: 5
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #32CD32; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Grazing Land: 1
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #1E90FF; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Water Body: 1
+            </p>
+            
+            <p style="margin: 6px 0; font-size: 12px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background-color: #8B008B; border-radius: 50%; border: 1px solid #ccc;"></span>
+                Sacred Grove: 1
+            </p>
+            
+            <hr style="margin: 8px 0;">
+            <p style="margin: 6px 0; font-size: 11px;">
+                <span style="display: inline-block; width: 20px; height: 3px; background-color: #ff7800; border: 2px solid #ff7800;"></span> FRA Claim Boundary
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 10px; color: #666; text-align: center;">
+                Generated: 2025-10-04 08:07
+            </p>
+        </div>
+        
+    
+            <div class="folium-map" id="map_6ceffe072d72c82ead065215061e5188" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_6ceffe072d72c82ead065215061e5188 = L.map(
+                "map_6ceffe072d72c82ead065215061e5188",
+                {
+                    center: [22.385107, 80.9010815],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 15,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_3d6d998f76b01f09bfb285ea5f23ccc7 = L.tileLayer(
+                "https://mt1.google.com/vt/lyrs=s\u0026x={x}\u0026y={y}\u0026z={z}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_3d6d998f76b01f09bfb285ea5f23ccc7.addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+            var tile_layer_90ce158d6d97d3e448f4ae675bdec512 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_90ce158d6d97d3e448f4ae675bdec512.addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+            var tile_layer_7998d69c7b9ec63820b8db075c435358 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Esri",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_7998d69c7b9ec63820b8db075c435358.addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+            var polygon_2dc11bfd44c01ecc0c703a8866cddc9a = L.polygon(
+                [[22.38385311038557, 80.90274729784136], [22.385223047945377, 80.90243428363112], [22.38581649682416, 80.90123701003556], [22.384294213514472, 80.89952069566472], [22.382257183022684, 80.90054627719942], [22.382190219227535, 80.90278615008238], [22.38385311038557, 80.90274729784136]],
+                {"bubblingMouseEvents": true, "color": "#ff7800", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#ffaa00", "fillOpacity": 0.25, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_6a9ecfa719e45000327539072f7954ee = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_b85266e7f94d8ee3f3639f13fea3aac4 = $(`<div id="html_b85266e7f94d8ee3f3639f13fea3aac4" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; min-width: 280px;">             <h4 style="margin-bottom: 10px; color: #2c5f2d;">🏛️ FRA Beneficiary Details</h4>             <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                 <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Personal Information</b></td></tr>                 <tr><td><b>ID:</b></td><td>FRA_00008980</td></tr>                 <tr><td><b>Name:</b></td><td>माधवी पिल्लई</td></tr>                 <tr><td><b>Father/Husband:</b></td><td>ज्योतिष</td></tr>                 <tr><td><b>Gender:</b></td><td>Female</td></tr>                 <tr><td><b>Age:</b></td><td>26</td></tr>                 <tr><td><b>Community:</b></td><td>Kol</td></tr>                 <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Location</b></td></tr>                 <tr><td><b>Village:</b></td><td>पाकाला</td></tr>                 <tr><td><b>District:</b></td><td>Mandla</td></tr>                 <tr><td><b>State:</b></td><td>Madhya Pradesh</td></tr>                 <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Family & Livelihood</b></td></tr>                 <tr><td><b>Family Size:</b></td><td>5</td></tr>                 <tr><td><b>Occupation:</b></td><td>Forest_Produce</td></tr>                 <tr><td><b>Annual Income:</b></td><td>₹74,439</td></tr>                 <tr><td><b>Education:</b></td><td>Graduate</td></tr>                 <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Assets Summary</b></td></tr>                 <tr><td><b>Total Assets:</b></td><td>5</td></tr>                 <tr><td><b>Total Area:</b></td><td>4.29 ha</td></tr>             </table>         </div>         </div>`)[0];
+                popup_6a9ecfa719e45000327539072f7954ee.setContent(html_b85266e7f94d8ee3f3639f13fea3aac4);
+            
+        
+
+        polygon_2dc11bfd44c01ecc0c703a8866cddc9a.bindPopup(popup_6a9ecfa719e45000327539072f7954ee)
+        ;
+
+        
+    
+    
+            polygon_2dc11bfd44c01ecc0c703a8866cddc9a.bindTooltip(
+                `<div>
+                     FRA Claim: सावित्री झादव (15 assets)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_56aed43993bb28bebf373f844a49850e = L.circleMarker(
+                [22.388304, 80.897792],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_097dbbe41d9e69d2a53179294c07fbc4 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_4ec1705ae042a9d34f562fec32922110 = $(`<div id="html_4ec1705ae042a9d34f562fec32922110" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022906</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>4.55 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.388304, 80.897792</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-08-27</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_097dbbe41d9e69d2a53179294c07fbc4.setContent(html_4ec1705ae042a9d34f562fec32922110);
+            
+        
+
+        circle_marker_56aed43993bb28bebf373f844a49850e.bindPopup(popup_097dbbe41d9e69d2a53179294c07fbc4)
+        ;
+
+        
+    
+    
+            circle_marker_56aed43993bb28bebf373f844a49850e.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 4.55 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_95ab913d2dc7bda5e5b52c4785348144 = L.circleMarker(
+                [22.383166, 80.9019],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_ae08c40853341e68fb292ad5034bf6da = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_47895c9aaf4640ececa59e5ab520d28d = $(`<div id="html_47895c9aaf4640ececa59e5ab520d28d" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022907</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>3.55 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.383166, 80.901900</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-05-31</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_ae08c40853341e68fb292ad5034bf6da.setContent(html_47895c9aaf4640ececa59e5ab520d28d);
+            
+        
+
+        circle_marker_95ab913d2dc7bda5e5b52c4785348144.bindPopup(popup_ae08c40853341e68fb292ad5034bf6da)
+        ;
+
+        
+    
+    
+            circle_marker_95ab913d2dc7bda5e5b52c4785348144.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 3.55 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_2fc286a6a4dd00df16cba96f7ef244b0 = L.circleMarker(
+                [22.382934, 80.905276],
+                {"bubblingMouseEvents": true, "color": "#FFD700", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFD700", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_9262e4d8616cfbe5b49479f62ddc4f3d = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_a26e4a0935e5282e3df27368e11f8dbb = $(`<div id="html_a26e4a0935e5282e3df27368e11f8dbb" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #FFD700;">📍 Agricultural Plot</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022908</td></tr>                     <tr><td><b>Type:</b></td><td>Agricultural Plot</td></tr>                     <tr><td><b>Area:</b></td><td>1.56 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.382934, 80.905276</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2023-10-13</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Crop Type:</b></td><td>Rice</td></tr><tr><td><b>Irrigation Source:</b></td><td>Rainfed</td></tr><tr><td><b>Soil Type:</b></td><td>Loamy</td></tr><tr><td><b>Productivity Index:</b></td><td>0.50</td></tr></table></div></div>`)[0];
+                popup_9262e4d8616cfbe5b49479f62ddc4f3d.setContent(html_a26e4a0935e5282e3df27368e11f8dbb);
+            
+        
+
+        circle_marker_2fc286a6a4dd00df16cba96f7ef244b0.bindPopup(popup_9262e4d8616cfbe5b49479f62ddc4f3d)
+        ;
+
+        
+    
+    
+            circle_marker_2fc286a6a4dd00df16cba96f7ef244b0.bindTooltip(
+                `<div>
+                     <b>Agricultural Plot</b><br>Area: 1.56 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9d657bcebac6214ce5c3023a2a149fee = L.circleMarker(
+                [22.38191, 80.901552],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_1d8e624fc24c1ba1fd85703ff0816699 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_3646399266fa80c3c4c3b44c5a99e09f = $(`<div id="html_3646399266fa80c3c4c3b44c5a99e09f" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022909</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>1.12 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.381910, 80.901552</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2023-10-27</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_1d8e624fc24c1ba1fd85703ff0816699.setContent(html_3646399266fa80c3c4c3b44c5a99e09f);
+            
+        
+
+        circle_marker_9d657bcebac6214ce5c3023a2a149fee.bindPopup(popup_1d8e624fc24c1ba1fd85703ff0816699)
+        ;
+
+        
+    
+    
+            circle_marker_9d657bcebac6214ce5c3023a2a149fee.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 1.12 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b99495f3729d84053bb544bea6d39310 = L.circleMarker(
+                [22.38448, 80.898162],
+                {"bubblingMouseEvents": true, "color": "#32CD32", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#32CD32", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_c1f5aa70d6d6a14661edf2c098b54859 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_87d3464efef29c17097fb3f3807ae1c1 = $(`<div id="html_87d3464efef29c17097fb3f3807ae1c1" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #32CD32;">📍 Grazing Land</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022910</td></tr>                     <tr><td><b>Type:</b></td><td>Grazing Land</td></tr>                     <tr><td><b>Area:</b></td><td>0.91 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.384480, 80.898162</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2023-12-29</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_c1f5aa70d6d6a14661edf2c098b54859.setContent(html_87d3464efef29c17097fb3f3807ae1c1);
+            
+        
+
+        circle_marker_b99495f3729d84053bb544bea6d39310.bindPopup(popup_c1f5aa70d6d6a14661edf2c098b54859)
+        ;
+
+        
+    
+    
+            circle_marker_b99495f3729d84053bb544bea6d39310.bindTooltip(
+                `<div>
+                     <b>Grazing Land</b><br>Area: 0.91 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_29a0c4991f33a87cca7c6a8d0c313171 = L.circleMarker(
+                [22.383733, 80.902555],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_e5c6faed6c52fe40b2d07f145389d5d4 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_245e6425a148e23909e6d32c58d54fe0 = $(`<div id="html_245e6425a148e23909e6d32c58d54fe0" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022911</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>3.57 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.383733, 80.902555</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-01-06</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_e5c6faed6c52fe40b2d07f145389d5d4.setContent(html_245e6425a148e23909e6d32c58d54fe0);
+            
+        
+
+        circle_marker_29a0c4991f33a87cca7c6a8d0c313171.bindPopup(popup_e5c6faed6c52fe40b2d07f145389d5d4)
+        ;
+
+        
+    
+    
+            circle_marker_29a0c4991f33a87cca7c6a8d0c313171.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 3.57 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c496eab1913b899c75d90051b46b5863 = L.circleMarker(
+                [22.382375, 80.903979],
+                {"bubblingMouseEvents": true, "color": "#1E90FF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#1E90FF", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_89cd3e1ed782b6db2de8ad3ab5c7aace = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_71eaff38d7b5a04cbe9b1b1c9fa6d646 = $(`<div id="html_71eaff38d7b5a04cbe9b1b1c9fa6d646" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #1E90FF;">📍 Water Body</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022912</td></tr>                     <tr><td><b>Type:</b></td><td>Water Body</td></tr>                     <tr><td><b>Area:</b></td><td>0.47 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.382375, 80.903979</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-04-27</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Water Body Type:</b></td><td>Pond</td></tr><tr><td><b>Capacity Liters:</b></td><td>9400</td></tr><tr><td><b>Depth Meters:</b></td><td>2.00</td></tr><tr><td><b>Water Quality:</b></td><td>Good</td></tr></table></div></div>`)[0];
+                popup_89cd3e1ed782b6db2de8ad3ab5c7aace.setContent(html_71eaff38d7b5a04cbe9b1b1c9fa6d646);
+            
+        
+
+        circle_marker_c496eab1913b899c75d90051b46b5863.bindPopup(popup_89cd3e1ed782b6db2de8ad3ab5c7aace)
+        ;
+
+        
+    
+    
+            circle_marker_c496eab1913b899c75d90051b46b5863.bindTooltip(
+                `<div>
+                     <b>Water Body</b><br>Area: 0.47 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_139f567b59585ced1db2826f559e7a8b = L.circleMarker(
+                [22.382919, 80.898399],
+                {"bubblingMouseEvents": true, "color": "#FFD700", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFD700", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_1a3dffb2d3e5255e6acfa8c822c06a4b = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_826f1647042f594f0b38be0ed5bee9b1 = $(`<div id="html_826f1647042f594f0b38be0ed5bee9b1" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #FFD700;">📍 Agricultural Plot</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022913</td></tr>                     <tr><td><b>Type:</b></td><td>Agricultural Plot</td></tr>                     <tr><td><b>Area:</b></td><td>1.3 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.382919, 80.898399</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2023-12-14</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Crop Type:</b></td><td>Rice</td></tr><tr><td><b>Irrigation Source:</b></td><td>Rainfed</td></tr><tr><td><b>Soil Type:</b></td><td>Loamy</td></tr><tr><td><b>Productivity Index:</b></td><td>0.50</td></tr></table></div></div>`)[0];
+                popup_1a3dffb2d3e5255e6acfa8c822c06a4b.setContent(html_826f1647042f594f0b38be0ed5bee9b1);
+            
+        
+
+        circle_marker_139f567b59585ced1db2826f559e7a8b.bindPopup(popup_1a3dffb2d3e5255e6acfa8c822c06a4b)
+        ;
+
+        
+    
+    
+            circle_marker_139f567b59585ced1db2826f559e7a8b.bindTooltip(
+                `<div>
+                     <b>Agricultural Plot</b><br>Area: 1.3 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6a4bc072a4cd95882e42e612702311ff = L.circleMarker(
+                [22.38401, 80.90102],
+                {"bubblingMouseEvents": true, "color": "#FFD700", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFD700", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_704dd54aa3fa7a4d79d725f861c5ee76 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_ac3142a2a368311a78e77ed31a547181 = $(`<div id="html_ac3142a2a368311a78e77ed31a547181" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #FFD700;">📍 Agricultural Plot</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022914</td></tr>                     <tr><td><b>Type:</b></td><td>Agricultural Plot</td></tr>                     <tr><td><b>Area:</b></td><td>1.37 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.384010, 80.901020</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-07-07</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Crop Type:</b></td><td>Rice</td></tr><tr><td><b>Irrigation Source:</b></td><td>Rainfed</td></tr><tr><td><b>Soil Type:</b></td><td>Loamy</td></tr><tr><td><b>Productivity Index:</b></td><td>0.50</td></tr></table></div></div>`)[0];
+                popup_704dd54aa3fa7a4d79d725f861c5ee76.setContent(html_ac3142a2a368311a78e77ed31a547181);
+            
+        
+
+        circle_marker_6a4bc072a4cd95882e42e612702311ff.bindPopup(popup_704dd54aa3fa7a4d79d725f861c5ee76)
+        ;
+
+        
+    
+    
+            circle_marker_6a4bc072a4cd95882e42e612702311ff.bindTooltip(
+                `<div>
+                     <b>Agricultural Plot</b><br>Area: 1.37 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_08756e9094ed76b9790a829fe07eadec = L.circleMarker(
+                [22.385661, 80.897819],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_bbd1ca1fd85e1b84507fc0f2ef2c4369 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_649cbd0396a6895f13b1bd0d4a2eb9a9 = $(`<div id="html_649cbd0396a6895f13b1bd0d4a2eb9a9" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022915</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>2.62 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.385661, 80.897819</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-12-19</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_bbd1ca1fd85e1b84507fc0f2ef2c4369.setContent(html_649cbd0396a6895f13b1bd0d4a2eb9a9);
+            
+        
+
+        circle_marker_08756e9094ed76b9790a829fe07eadec.bindPopup(popup_bbd1ca1fd85e1b84507fc0f2ef2c4369)
+        ;
+
+        
+    
+    
+            circle_marker_08756e9094ed76b9790a829fe07eadec.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 2.62 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f20ae4cef466f3079722fba966e14d70 = L.circleMarker(
+                [22.38485, 80.896887],
+                {"bubblingMouseEvents": true, "color": "#FFD700", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFD700", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_eaf63ed088aca9ba5e6c3a9dd41c7503 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_9f3f0a2cdaf4749c25ed86506deff2ce = $(`<div id="html_9f3f0a2cdaf4749c25ed86506deff2ce" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #FFD700;">📍 Agricultural Plot</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022916</td></tr>                     <tr><td><b>Type:</b></td><td>Agricultural Plot</td></tr>                     <tr><td><b>Area:</b></td><td>1.94 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.384850, 80.896887</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-08-27</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Crop Type:</b></td><td>Rice</td></tr><tr><td><b>Irrigation Source:</b></td><td>Rainfed</td></tr><tr><td><b>Soil Type:</b></td><td>Loamy</td></tr><tr><td><b>Productivity Index:</b></td><td>0.50</td></tr></table></div></div>`)[0];
+                popup_eaf63ed088aca9ba5e6c3a9dd41c7503.setContent(html_9f3f0a2cdaf4749c25ed86506deff2ce);
+            
+        
+
+        circle_marker_f20ae4cef466f3079722fba966e14d70.bindPopup(popup_eaf63ed088aca9ba5e6c3a9dd41c7503)
+        ;
+
+        
+    
+    
+            circle_marker_f20ae4cef466f3079722fba966e14d70.bindTooltip(
+                `<div>
+                     <b>Agricultural Plot</b><br>Area: 1.94 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d77e1151dc0b6029a93ecaa0f5f2cb77 = L.circleMarker(
+                [22.385294, 80.904745],
+                {"bubblingMouseEvents": true, "color": "#FFD700", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFD700", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_36ddfa1dc9a9d6c470fc0281c5a3483a = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_a6c2cc84fe9972800257d6730021fa69 = $(`<div id="html_a6c2cc84fe9972800257d6730021fa69" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #FFD700;">📍 Agricultural Plot</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022917</td></tr>                     <tr><td><b>Type:</b></td><td>Agricultural Plot</td></tr>                     <tr><td><b>Area:</b></td><td>0.49 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.385294, 80.904745</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-11-08</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Crop Type:</b></td><td>Rice</td></tr><tr><td><b>Irrigation Source:</b></td><td>Rainfed</td></tr><tr><td><b>Soil Type:</b></td><td>Loamy</td></tr><tr><td><b>Productivity Index:</b></td><td>0.50</td></tr></table></div></div>`)[0];
+                popup_36ddfa1dc9a9d6c470fc0281c5a3483a.setContent(html_a6c2cc84fe9972800257d6730021fa69);
+            
+        
+
+        circle_marker_d77e1151dc0b6029a93ecaa0f5f2cb77.bindPopup(popup_36ddfa1dc9a9d6c470fc0281c5a3483a)
+        ;
+
+        
+    
+    
+            circle_marker_d77e1151dc0b6029a93ecaa0f5f2cb77.bindTooltip(
+                `<div>
+                     <b>Agricultural Plot</b><br>Area: 0.49 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c173a91b57a2442c620852d2d514d6ec = L.circleMarker(
+                [22.385159, 80.903175],
+                {"bubblingMouseEvents": true, "color": "#8B008B", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#8B008B", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_c9fe7ebdb6ea1e7fdc382ef2af2d778f = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_9fb44d9f1f5a5eace6b7b0db1a50ac84 = $(`<div id="html_9fb44d9f1f5a5eace6b7b0db1a50ac84" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #8B008B;">📍 Sacred Grove</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022918</td></tr>                     <tr><td><b>Type:</b></td><td>Sacred Grove</td></tr>                     <tr><td><b>Area:</b></td><td>1.5 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.385159, 80.903175</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-06-29</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_c9fe7ebdb6ea1e7fdc382ef2af2d778f.setContent(html_9fb44d9f1f5a5eace6b7b0db1a50ac84);
+            
+        
+
+        circle_marker_c173a91b57a2442c620852d2d514d6ec.bindPopup(popup_c9fe7ebdb6ea1e7fdc382ef2af2d778f)
+        ;
+
+        
+    
+    
+            circle_marker_c173a91b57a2442c620852d2d514d6ec.bindTooltip(
+                `<div>
+                     <b>Sacred Grove</b><br>Area: 1.5 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0d91609551248d13bb82da2b27da5df4 = L.circleMarker(
+                [22.386353, 80.897031],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_d27118343ebce874308cd1c6f2124ec0 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_9af2e7c3e5a1babb5556b51992416e94 = $(`<div id="html_9af2e7c3e5a1babb5556b51992416e94" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022919</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>2.91 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.386353, 80.897031</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: orange; font-weight: bold;">Pending</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2024-10-01</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_d27118343ebce874308cd1c6f2124ec0.setContent(html_9af2e7c3e5a1babb5556b51992416e94);
+            
+        
+
+        circle_marker_0d91609551248d13bb82da2b27da5df4.bindPopup(popup_d27118343ebce874308cd1c6f2124ec0)
+        ;
+
+        
+    
+    
+            circle_marker_0d91609551248d13bb82da2b27da5df4.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 2.91 ha<br>Status: Pending
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ad747230cdc0ed896543a3079040dee0 = L.circleMarker(
+                [22.386517, 80.899129],
+                {"bubblingMouseEvents": true, "color": "#808080", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#808080", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 1}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+        var popup_f7c79aa4cc5f65a3407950bfc0e90282 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var html_4334016f7af8da7b8a8f80b4cebadeeb = $(`<div id="html_4334016f7af8da7b8a8f80b4cebadeeb" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; min-width: 300px;">                 <h4 style="margin-bottom: 10px; color: #808080;">📍 Forest Patch</h4>                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">                     <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Basic Information</b></td></tr>                     <tr><td><b>Asset ID:</b></td><td>ASSET_00022920</td></tr>                     <tr><td><b>Type:</b></td><td>Forest Patch</td></tr>                     <tr><td><b>Area:</b></td><td>1.6 hectares</td></tr>                     <tr><td><b>Location:</b></td><td>22.386517, 80.899129</td></tr>                     <tr><td><b>Status:</b></td><td><span style="color: green; font-weight: bold;">Verified</span></td></tr>                     <tr><td><b>Survey Date:</b></td><td>2025-07-17</td></tr>             <tr style="background-color: #f0f0f0;"><td colspan="2"><b>Detailed Attributes</b></td></tr><tr><td><b>Condition:</b></td><td>Good</td></tr><tr><td><b>Accessibility:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Density:</b></td><td>Moderate</td></tr><tr><td><b>Vegetation Type:</b></td><td>Forest</td></tr></table></div></div>`)[0];
+                popup_f7c79aa4cc5f65a3407950bfc0e90282.setContent(html_4334016f7af8da7b8a8f80b4cebadeeb);
+            
+        
+
+        circle_marker_ad747230cdc0ed896543a3079040dee0.bindPopup(popup_f7c79aa4cc5f65a3407950bfc0e90282)
+        ;
+
+        
+    
+    
+            circle_marker_ad747230cdc0ed896543a3079040dee0.bindTooltip(
+                `<div>
+                     <b>Forest Patch</b><br>Area: 1.6 ha<br>Status: Verified
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var measure_control_da8cdeb17c8d46c200ed6d7560ea40b5 = new L.Control.Measure(
+                {
+  "position": "topleft",
+  "primaryLengthUnit": "meters",
+  "secondaryLengthUnit": "kilometers",
+  "primaryAreaUnit": "hectares",
+  "secondaryAreaUnit": "sqmeters",
+});
+            map_6ceffe072d72c82ead065215061e5188.addControl(measure_control_da8cdeb17c8d46c200ed6d7560ea40b5);
+
+            // Workaround for using this plugin with Leaflet>=1.8.0
+            // https://github.com/ljagis/leaflet-measure/issues/171
+            L.Control.Measure.include({
+                _setCaptureMarkerIcon: function () {
+                    // disable autopan
+                    this._captureMarker.options.autoPanOnFocus = false;
+                    // default function
+                    this._captureMarker.setIcon(
+                        L.divIcon({
+                            iconSize: this._map.getSize().multiplyBy(2)
+                        })
+                    );
+                },
+            });
+
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topright",
+  "title": "Fullscreen",
+  "titleCancel": "Exit Fullscreen",
+  "forceSeparateButton": true,
+}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+        
+    
+            var layer_control_45e8f4621d35351d92bb804edb4a2508_layers = {
+                base_layers : {
+                    "Google Satellite" : tile_layer_3d6d998f76b01f09bfb285ea5f23ccc7,
+                    "Street Map" : tile_layer_90ce158d6d97d3e448f4ae675bdec512,
+                    "Esri Satellite" : tile_layer_7998d69c7b9ec63820b8db075c435358,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_45e8f4621d35351d92bb804edb4a2508 = L.control.layers(
+                layer_control_45e8f4621d35351d92bb804edb4a2508_layers.base_layers,
+                layer_control_45e8f4621d35351d92bb804edb4a2508_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_6ceffe072d72c82ead065215061e5188);
+
+        
+</script>
+</html>
