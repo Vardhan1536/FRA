@@ -82,7 +82,9 @@ def startup():
             
     global legal_agent
     legal_agent = LegalAssistanceAgent(model)
-
+@app.route('/')
+def hello():
+    return 'FRA Backend is running!'
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
     if not role:
@@ -200,4 +202,4 @@ async def legal_assistance(input: QueryInput):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0")
