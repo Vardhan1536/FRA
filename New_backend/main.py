@@ -82,9 +82,9 @@ def startup():
             
     global legal_agent
     legal_agent = LegalAssistanceAgent(model)
-@app.route('/')
-def hello():
-    return 'FRA Backend is running!'
+@app.get('/')
+def hello(request: Request):  
+    return {'message': 'Hello from Render!'}
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
     if not role:
