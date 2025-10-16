@@ -628,9 +628,9 @@ export const claimsAPI = {
 export const statsAPI = {
   getDashboardStats: async () => {
     // Generate realistic mock data below 150
-    const totalClaims = Math.floor(Math.random() * 50) + 100; // 100-149
-    const approvedPattas = Math.floor(totalClaims * 0.6) + Math.floor(Math.random() * 20); // 60-80% of total
-    const pendingClaims = Math.floor(totalClaims * 0.25) + Math.floor(Math.random() * 15); // 20-35% of total
+    const totalClaims = 143 // 100-149
+    const approvedPattas = 98; // 60-80% of total
+    const pendingClaims = 36; // 20-35% of total
     const rejectedClaims = totalClaims - approvedPattas - pendingClaims; // Remaining
     const totalArea = Math.floor(Math.random() * 50) + 100; // 100-149 hectares
     const activeAlerts = Math.floor(Math.random() * 10) + 3; // 3-12 alerts
@@ -768,10 +768,10 @@ export const sdlcAPI = {
 
   getSDLCDashboardStats: async () => {
     // Generate realistic mock data below 150 for SDLC
-    const totalClaims = Math.floor(Math.random() * 40) + 80; // 80-119
-    const pendingReview = Math.floor(totalClaims * 0.3) + Math.floor(Math.random() * 10); // 25-40% of total
-    const approvedToday = Math.floor(Math.random() * 15) + 5; // 5-19
-    const rejectedToday = Math.floor(Math.random() * 8) + 2; // 2-9
+    const totalClaims = 800; // 80-119
+    const pendingReview = 300; // 25-40% of total
+    const approvedToday = 100; // 5-19
+    const rejectedToday = 10; // 2-9
     const dssFlagged = Math.floor(Math.random() * 12) + 3; // 3-14
     const urgentAlerts = Math.floor(Math.random() * 8) + 2; // 2-9
 
@@ -921,10 +921,10 @@ export const dlcAPI = {
 
   getDLCDashboardStats: async () => {
     // Generate realistic mock data below 150 for DLC
-    const totalClaims = Math.floor(Math.random() * 45) + 90; // 90-134
-    const approvedClaims = Math.floor(totalClaims * 0.65) + Math.floor(Math.random() * 15); // 60-80% of total
-    const rejectedClaims = Math.floor(totalClaims * 0.15) + Math.floor(Math.random() * 8); // 10-25% of total
-    const pendingClaims = Math.floor(totalClaims * 0.2) + Math.floor(Math.random() * 10); // 15-30% of total
+    const totalClaims = 2896; // 90-134
+    const approvedClaims = 1219; // 60-80% of total
+    const rejectedClaims = 378; // 10-25% of total
+    const pendingClaims = 20; // 15-30% of total
     const escalatedClaims = Math.floor(Math.random() * 12) + 3; // 3-14
     const districtAlerts = Math.floor(Math.random() * 10) + 2; // 2-11
 
@@ -936,10 +936,10 @@ export const dlcAPI = {
       escalatedClaims,
       districtAlerts,
       schemeCoverage: {
-        totalSchemes: Math.floor(Math.random() * 8) + 5, // 5-12
-        activeSchemes: Math.floor(Math.random() * 6) + 3, // 3-8
-        beneficiaries: Math.floor(Math.random() * 30) + 70, // 70-99
-        coveragePercentage: Math.floor(Math.random() * 20) + 75 // 75-94%
+        totalSchemes: 9, // 5-12
+        activeSchemes: 7, // 3-8
+        beneficiaries: 819, // 70-99
+        coveragePercentage: 80 // 75-94%
       },
       regionalBreakdown: [
         { region: 'North Zone', claims: Math.floor(Math.random() * 15) + 20, approved: Math.floor(Math.random() * 10) + 15 },
