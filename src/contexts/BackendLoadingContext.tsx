@@ -52,7 +52,7 @@ export const BackendLoadingProvider: React.FC<{ children: React.ReactNode }> = (
       setBackendStatus('checking');
       
       // Try to ping the backend health endpoint
-      const response = await fetch('http://localhost:8000/health', {
+      const response = await fetch('https://fra-5kpm.onrender.com/health', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
