@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
+import { BackendLoadingProvider } from './contexts/BackendLoadingContext';
 import LoginForm from './components/Auth/LoginForm';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/grama-sabha/Dashboard';
@@ -30,6 +31,7 @@ import DLCSchemes from './pages/dlc/Schemes';
 import DLCResourceSuggestions from './pages/dlc/ResourceSuggestions';
 import DLCAlerts from './pages/dlc/Alerts';
 import DLCSettings from './pages/dlc/Settings';
+import TestLoadingPage from './pages/TestLoadingPage';
 import './i18n';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -71,6 +73,9 @@ const AppContent: React.FC = () => {
         
         {/* Public Volunteer Upload Route */}
         <Route path="/volunteer-upload" element={<VolunteerUpload />} />
+        
+        {/* Test Loading System Route */}
+        <Route path="/test-loading" element={<TestLoadingPage />} />
         
         {/* Grama Sabha Routes */}
         <Route 
@@ -142,7 +147,9 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <AppContent />
+        <BackendLoadingProvider>
+          <AppContent />
+        </BackendLoadingProvider>
       </AppProvider>
     </AuthProvider>
   );

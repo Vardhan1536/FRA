@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import BackendLoadingOverlay from '../UI/BackendLoadingOverlay';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -23,6 +24,9 @@ const Layout: React.FC = () => {
           </div>
         </main>
       </div>
+      
+      {/* Backend Loading Overlay */}
+      <BackendLoadingOverlay />
     </div>
   );
 };

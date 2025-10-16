@@ -198,6 +198,15 @@ async def legal_assistance(input: QueryInput):
     result = legal_agent.provide_legal_assistance(input.query)
     return result
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for backend status"""
+    return {
+        "status": "healthy",
+        "message": "Backend is ready",
+        "timestamp": "2024-01-01T00:00:00Z"
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
