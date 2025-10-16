@@ -82,7 +82,9 @@ def startup():
             
     global legal_agent
     legal_agent = LegalAssistanceAgent(model)
-
+@app.get('/')
+def hello(request: Request):  
+    return {'message': 'Hello from Render!'}
 @app.get("/monitor-changes")
 async def monitor_changes(role: str = None):
     if not role:
@@ -209,4 +211,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get('PORT', 10000))
+    uvicorn.run(app, host='0.0.0.0', port=port)
