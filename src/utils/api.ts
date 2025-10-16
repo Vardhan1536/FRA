@@ -118,7 +118,7 @@ export const claimsAPI = {
         }
       };
 
-      const response = await axios.post('http://127.0.0.1:8000/add-beneficiary', updatedClaimData, {
+      const response = await axios.post('https://fra-5kpm.onrender.com/add-beneficiary', updatedClaimData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -236,7 +236,7 @@ export const claimsAPI = {
       // Send approved claim to the API endpoint
       console.log('Sending approved claim to API:', approvedClaim);
       
-      const response = await axios.post('http://127.0.0.1:8000/add-beneficiary', approvedClaim, {
+      const response = await axios.post('https://fra-5kpm.onrender.com/add-beneficiary', approvedClaim, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -276,7 +276,7 @@ export const claimsAPI = {
     try {
       console.log(`Fetching beneficiaries for role: ${role}`);
       
-      const response = await axios.get('http://127.0.0.1:8000/get-beneficiaries', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/get-beneficiaries', {
         params: {
           role: role
         },
@@ -383,7 +383,7 @@ export const claimsAPI = {
     try {
       console.log(`Fetching claims for role: ${role}`);
       
-      const response = await axios.get('http://127.0.0.1:8000/get-beneficiaries', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/get-beneficiaries', {
         params: {
           role: role
         },
@@ -668,7 +668,7 @@ export const sdlcAPI = {
     try {
       console.log('Fetching claims for SDLC review');
       
-      const response = await axios.get('http://127.0.0.1:8000/get-beneficiaries', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/get-beneficiaries', {
         params: {
           role: 'SDLC'
         },
@@ -796,7 +796,7 @@ export const dlcAPI = {
     try {
       console.log('Fetching claims for DLC review');
       
-      const response = await axios.get('http://127.0.0.1:8000/get-beneficiaries', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/get-beneficiaries', {
         params: {
           role: 'DLC'
         },
@@ -981,7 +981,7 @@ export const alertsAPI = {
     try {
       console.log(`Fetching alerts from monitoring API for role: ${role}`);
       
-      const response = await axios.get('http://127.0.0.1:8000/monitor-changes', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/monitor-changes', {
         params: {
           role: role
         },
@@ -1061,7 +1061,7 @@ export const alertsAPI = {
     try {
       console.log(`Acknowledging alert ${alertId} with comments: ${comments}`);
       
-      const response = await axios.post(`http://127.0.0.1:8000/monitor-changes/${alertId}/acknowledge`, {
+      const response = await axios.post(`https://fra-5kpm.onrender.com/monitor-changes/${alertId}/acknowledge`, {
         comments: comments || '',
         acknowledgedAt: new Date().toISOString()
       }, {
@@ -1138,7 +1138,7 @@ export const alertsAPI = {
     try {
       console.log('Refreshing change detection data');
       
-      const response = await axios.post('http://127.0.0.1:8000/monitor-changes/refresh', {}, {
+      const response = await axios.post('https://fra-5kpm.onrender.com/monitor-changes/refresh', {}, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -1277,7 +1277,7 @@ export const legalAssistanceAPI = {
     try {
       console.log(`Getting legal assistance for query: ${query}, role: ${role}`);
       
-      const response = await axios.post('http://127.0.0.1:8000/legal-assistance', 
+      const response = await axios.post('https://fra-5kpm.onrender.com/legal-assistance', 
         JSON.stringify({ query: query }), {
         headers: {
           'Content-Type': 'application/json',
@@ -1601,7 +1601,7 @@ export const schemeEligibilityAPI = {
     try {
       console.log(`Fetching scheme eligibility for role: ${role}`);
       
-      const response = await axios.get('http://127.0.0.1:8000/get-scheme-eligibility', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/get-scheme-eligibility', {
         params: {
           role: role
         },
@@ -1805,7 +1805,7 @@ export const notificationsAPI = {
     try {
       console.log(`Notifying eligible beneficiaries for scheme: ${schemeName}, role: ${role}`);
       
-      const response = await axios.post('http://127.0.0.1:8000/notify-eligible-beneficiaries', {
+      const response = await axios.post('https://fra-5kpm.onrender.com/notify-eligible-beneficiaries', {
         scheme_name: schemeName,
         role: role
       }, {
@@ -1872,7 +1872,7 @@ export const resourceSuggestionsAPI = {
     try {
       console.log(`Fetching resource suggestions for role: ${role}`);
       
-      const response = await axios.get('http://127.0.0.1:8000/suggest-resources', {
+      const response = await axios.get('https://fra-5kpm.onrender.com/suggest-resources', {
         params: {
           role: role
         },
