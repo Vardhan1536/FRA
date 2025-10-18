@@ -25,8 +25,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For development, start with no user to show login page
-    // In production, uncomment the Firebase code below
+    // Check localStorage for stored user data on initialization
+    const storedUserData = localStorage.getItem('userData');
+    const storedUserRole = localStorage.getItem('userRole');
+    
+    if (storedUserData && storedUserRole) {
+      try {
+        const userData: User = JSON.parse(storedUserData);
+        // Validate that the stored data has required fields
+        if (userData.role && userData.email && userData.uid) {
+          setCurrentUser(userData);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        // Clear invalid data
+        localStorage.removeItem('userData');
+        localStorage.removeItem('userRole');
+      }
+    }
+    
+    // If no valid stored data, set no user
     setCurrentUser(null);
     setLoading(false);
     
