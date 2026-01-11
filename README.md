@@ -76,8 +76,8 @@ The system includes comprehensive mapping layers:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd fra-atlas-grama-sabha
+   git clone [<repository-url>](https://github.com/Vardhan1536/FRA)
+   cd FRA
    ```
 
 2. **Install dependencies**
@@ -221,13 +221,6 @@ npm run test
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and queries:
-- **Email**: support@fra-atlas.gov.in
-- **Documentation**: [Link to detailed documentation]
-- **Issue Tracker**: [GitHub Issues]
 
 ## 🔮 Future Enhancements
 
