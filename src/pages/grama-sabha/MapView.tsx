@@ -36,7 +36,7 @@ const createCustomIcon = (color: string, icon: any) => {
     iconAnchor: [10, 10]
   });
 };
-
+// Claim data demonistration
 // Mock data for demonstration
 const mockClaims = [
   {
