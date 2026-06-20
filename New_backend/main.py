@@ -21,7 +21,10 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 class QueryInput(BaseModel):
     query: str
 
@@ -30,7 +33,7 @@ GLOBAL_MONITORING_RESULTS = {}  # Define the global dictionary here
 @app.on_event("startup")
 def startup():
     initialize_demo_data()
-    api_key = os.getenv("GEMINI_API_KEY", "AIzaSyBiU8N_zTFiJrUYSr2x6CF89Nmk9RGEYIY")
+    api_key = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-2.5-flash')
     agent = EligibilityAgent(model)
